@@ -34,6 +34,12 @@ pass against the live service.
   revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
   sparse. Facts whose source filing is outside the ingested window are skipped (lineage
   integrity), bounding fundamentals depth to filing coverage.
+- **Index membership reconstruction:** S&P 500 membership is reconstructed from a free source
+  (Wikipedia current + changes tables), treated as a source, not an authority. Where the
+  change record is incomplete, the reconstruction errs toward **under-inclusion**: unbounded
+  dangling additions are dropped, and overlapping per-ticker intervals are deduped (most
+  recent kept). Historical member counts are therefore approximate (typically ~500–515).
+  Securities are keyed by ticker pending CIK linkage. See [`05-index-membership.md`](05-index-membership.md).
 - **Restatement vs. recast:** a fundamental fact is versioned by `(company, concept, fiscal
   year, fiscal period)`. Any later filing reporting a different value for that period creates
   a new knowledge-time version. This correctly captures genuine restatements, but also

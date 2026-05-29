@@ -1,6 +1,27 @@
 # 05 — Index membership (historical S&P 500)
 
-*Scaffold — to be completed alongside constituents ingestion (build step 6e).*
+*Status: implemented (6e) from a reconstructed source (Wikipedia 'List of S&P 500 companies').*
+
+## How it works (6e)
+
+We parse the current-constituents table and the changes table (additions/removals with
+dates), then **reconstruct** membership intervals by walking the change events backward from
+the current snapshot: an "added on D" begins a membership at D; a "removed on D" ends one at
+D; a current member with no relevant change has an unknown (pre-coverage) start and an open
+end. Intervals are stored bitemporally in `index_membership` (valid time = membership span;
+knowledge time = our reconstruction). A point-in-time query (`get_index_constituents(index,
+as_of_date)`) returns the constituents as understood on that date — survivorship-free.
+
+Validated against the golden cases on the live reconstructed source: Lehman (LEH) is a member
+on 2008-09-14 and absent by 2008-09-22 (actual removal 2008-09-16); Tesla (TSLA) is absent on
+2020-12-20 and present on 2020-12-21.
+
+## Source and provenance
+
+The free reconstruction (Wikipedia) is treated as a *source*, not an authority. Securities
+are keyed by ticker; CIK linkage is later enrichment. Reconstruction quality is bounded by
+the completeness of the change record — see limitations below and in
+[`08-known-limitations.md`](08-known-limitations.md).
 
 ## Principle
 
