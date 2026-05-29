@@ -29,6 +29,17 @@ pass against the live service.
 - **EDGAR filings (current):** only the `filings.recent` block (~1,000 latest filings per
   company) is ingested. Full 2010-present depth requires paging `filings.files[]` (tracked
   follow-up). See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
+- **Fundamentals (current):** only **duration** concepts (income-statement) are ingested;
+  instant/balance-sheet concepts are a follow-on. Concept→tag coverage is partial (e.g.
+  revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
+  sparse. Facts whose source filing is outside the ingested window are skipped (lineage
+  integrity), bounding fundamentals depth to filing coverage.
+- **Restatement vs. recast:** a fundamental fact is versioned by `(company, concept, fiscal
+  year, fiscal period)`. Any later filing reporting a different value for that period creates
+  a new knowledge-time version. This correctly captures genuine restatements, but also
+  captures comparative *recasts/reclassifications* (e.g. continuing-vs-total operations) the
+  same way — both are real changes to the reported figure for that period, but they are not
+  distinguished as to cause.
 - Options-implied expectations: bounded by the chosen historical-options vendor's depth.
   ORATS near-EOD reaches ~2007; OptionMetrics IvyDB reaches 1996 at institutional pricing.
   The actual depth at launch will be stated here once the vendor is fixed.

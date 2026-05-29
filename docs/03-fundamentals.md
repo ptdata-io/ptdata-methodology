@@ -1,6 +1,22 @@
 # 03 — Fundamentals: as-reported vs. restated
 
-*Scaffold — to be completed alongside fundamentals ingestion (build step 6c).*
+*Status: implemented (6c) from SEC EDGAR XBRL `companyfacts`, for duration (income-statement)
+concepts. Instant/balance-sheet concepts are a documented follow-on.*
+
+## How it works (6c)
+
+Fundamentals come from EDGAR's XBRL `companyfacts` feed
+(`https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json`). Each reported entry
+carries the source accession (`accn`), the period (`start`/`end`), the fiscal year/period
+(`fy`/`fp`), and the date it was filed (`filed`). We map these to the bitemporal model:
+`filed` → `knowledge_from`, the period → valid time, `fy`/`fp` → the logical fact identity.
+
+A restatement falls straight out of the model: a later filing reporting a *different* value
+for the same `(company, concept, fy, fp)` creates a new knowledge-time version and closes
+the prior one — nothing is overwritten (methodology §4). A point-in-time query returns the
+version knowable on the requested date. This is validated against real data: e.g. GE's
+2019-Q3 net income was reported one way originally and re-presented later; a query "as of"
+the earlier date returns the original figure, "as of" the later date the revised one.
 
 ## Principle
 
