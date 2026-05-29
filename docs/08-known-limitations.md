@@ -29,6 +29,10 @@ pass against the live service.
 - **EDGAR filings (current):** only the `filings.recent` block (~1,000 latest filings per
   company) is ingested. Full 2010-present depth requires paging `filings.files[]` (tracked
   follow-up). See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
+- **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` data begins ~2009. Fundamentals for
+  earlier periods (e.g. Enron 2001, WorldCom 2002) cannot be served from this source and
+  would require parsing pre-XBRL text filings — out of MVP scope. The correctness suite
+  includes such cases deliberately; they stay red until (if ever) a pre-XBRL source is added.
 - **Fundamentals (current):** only **duration** concepts (income-statement) are ingested;
   instant/balance-sheet concepts are a follow-on. Concept→tag coverage is partial (e.g.
   revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
