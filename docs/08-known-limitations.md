@@ -26,6 +26,9 @@ pass against the live service.
 ## Coverage windows (targets; confirmed at launch)
 
 - Prices: target 2000–present. Fundamentals & earnings: target 2010–present.
+- **EDGAR filings (current):** only the `filings.recent` block (~1,000 latest filings per
+  company) is ingested. Full 2010-present depth requires paging `filings.files[]` (tracked
+  follow-up). See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - Options-implied expectations: bounded by the chosen historical-options vendor's depth.
   ORATS near-EOD reaches ~2007; OptionMetrics IvyDB reaches 1996 at institutional pricing.
   The actual depth at launch will be stated here once the vendor is fixed.
