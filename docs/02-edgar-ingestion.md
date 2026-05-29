@@ -1,7 +1,7 @@
 # 02 — EDGAR ingestion
 
-*Status: filing-index ingestion (6a) implemented; 8-K Item 2.02 parsing (6b) and fundamentals
-(6c) pending. This document is filled in as those land.*
+*Status: filing-index ingestion (6a) and 8-K Item 2.02 earnings events (6b) implemented;
+fundamentals (6c) pending. This document is filled in as those land.*
 
 SEC EDGAR is ptdata's foundational, public-domain source. This document specifies how we
 ingest it and how versioning/linking work.
@@ -19,6 +19,18 @@ ingest it and how versioning/linking work.
   ingested so far. Full 2010-present depth requires paging `filings.files[]` — a tracked
   follow-up. `amends_accession` linkage (restatement chains) is resolved by a later step, not
   at index ingest.
+
+## Implemented (6b — earnings announcement events)
+
+- Each ingested 8-K carrying **Item 2.02** ("Results of Operations and Financial Condition")
+  becomes an `earnings_event`, keyed by its 8-K accession (idempotent), capturing the exact
+  `sec_acceptance_ts` from EDGAR.
+- **Deferred by design:** fiscal-period attribution (`fiscal_year`/`fiscal_period`) and the
+  market `dissemination_ts`. An 8-K's `period_of_report` is the announcement date, not the
+  fiscal-period end, so attribution is enriched authoritatively in 6c (from the as-reported
+  parse); dissemination/wire time is a separate sourcing effort. Until then events carry
+  `dissemination_confidence = 'unknown'` and null fiscal attribution — see
+  [`06-earnings-events.md`](06-earnings-events.md) and [`08-known-limitations.md`](08-known-limitations.md).
 
 ## Scope
 
