@@ -11,6 +11,13 @@ An earnings event in ptdata is the join of four things, each point-in-time-corre
 
 `get_earnings_event(ticker, fiscal_period, window=…)` returns all four.
 
+*Status: implemented — 8-K Item 2.02 timestamps (6b) and fiscal-period attribution; served
+via `/v1/earnings-event`. The options-implied expected move (6f), realized price reaction
+(6d), and as-reported figure linkage are added as those sources land; the response omits
+them until then. **Fiscal attribution:** an earnings 8-K is attributed to the fiscal period
+of the periodic filing it precedes — a 10-Q gives the quarter, a 10-K gives FY. A Q4/annual
+release accompanies the 10-K and is therefore attributed to **FY**, not Q4.*
+
 ## Timestamps: two distinct events, not one
 
 This is the subtlety most data products get wrong. There are **two different moments**, and
