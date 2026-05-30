@@ -44,12 +44,12 @@ pass against the live service.
   dangling additions are dropped, and overlapping per-ticker intervals are deduped (most
   recent kept). Historical member counts are therefore approximate (typically ~500–515).
   Securities are keyed by ticker pending CIK linkage. See [`05-index-membership.md`](05-index-membership.md).
-- **Restatement vs. recast:** a fundamental fact is versioned by `(company, concept, fiscal
-  year, fiscal period)`. Any later filing reporting a different value for that period creates
-  a new knowledge-time version. This correctly captures genuine restatements, but also
-  captures comparative *recasts/reclassifications* (e.g. continuing-vs-total operations) the
-  same way — both are real changes to the reported figure for that period, but they are not
-  distinguished as to cause.
+- **Restatement vs. recast:** facts are attributed to their actual period (by end date), so
+  prior-year comparative *columns* no longer contaminate the filing's own period. A later
+  filing reporting a *different* value for a period still creates a new knowledge-time version
+  — this captures genuine restatements but also comparative *recasts/reclassifications* (e.g.
+  continuing-vs-total operations) the same way; the two are not distinguished as to cause.
+  See [`03-fundamentals.md`](03-fundamentals.md).
 - Options-implied expectations: bounded by the chosen historical-options vendor's depth.
   ORATS near-EOD reaches ~2007; OptionMetrics IvyDB reaches 1996 at institutional pricing.
   The actual depth at launch will be stated here once the vendor is fixed.

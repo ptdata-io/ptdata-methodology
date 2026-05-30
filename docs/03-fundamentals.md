@@ -11,10 +11,20 @@ carries the source accession (`accn`), the period (`start`/`end`), the fiscal ye
 (`fy`/`fp`), and the date it was filed (`filed`). We map these to the bitemporal model:
 `filed` → `knowledge_from`, the period → valid time, `fy`/`fp` → the logical fact identity.
 
+**Fiscal-period attribution is by the fact's *actual* period (its end date), not by
+companyfacts' `fy`/`fp`** — those reflect the *filing's* context, so a prior-year comparative
+column would otherwise be mislabeled with the filing's period. We build an
+end-date → (fiscal year, period) map from *primary* facts (where a filing's fact-end equals
+its `period_of_report`) and attribute every fact by its end date. This places comparatives in
+their true period and still captures a restated prior-year comparative as a new
+knowledge-time version. Revenue is read from the ASC-606 tag with the legacy `Revenues` tag as
+fallback.
+
 A restatement falls straight out of the model: a later filing reporting a *different* value
-for the same `(company, concept, fy, fp)` creates a new knowledge-time version and closes
-the prior one — nothing is overwritten (methodology §4). A point-in-time query returns the
-version knowable on the requested date. This is validated against real data: e.g. GE's
+for the same period creates a new knowledge-time version and closes the prior one — nothing is
+overwritten (methodology §4). A point-in-time query returns the version knowable on the
+requested date. The earnings-event `as_reported` figures are the originally-reported values
+for the period (earliest knowledge time). This is validated against real data: e.g. GE's
 2019-Q3 net income was reported one way originally and re-presented later; a query "as of"
 the earlier date returns the original figure, "as of" the later date the revised one.
 
