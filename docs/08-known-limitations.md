@@ -26,9 +26,9 @@ pass against the live service.
 ## Coverage windows (targets; confirmed at launch)
 
 - Prices: target 2000–present. Fundamentals & earnings: target 2010–present.
-- **EDGAR filings (current):** only the `filings.recent` block (~1,000 latest filings per
-  company) is ingested. Full 2010-present depth requires paging `filings.files[]` (tracked
-  follow-up). See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
+- **EDGAR filings:** full history is ingested (both `filings.recent` and the older
+  `filings.files[]` pages). Fundamentals depth is therefore bounded by XBRL availability
+  (~2009), not by filing coverage. See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` data begins ~2009. Fundamentals for
   earlier periods (e.g. Enron 2001, WorldCom 2002) cannot be served from this source and
   would require parsing pre-XBRL text filings — out of MVP scope. The correctness suite

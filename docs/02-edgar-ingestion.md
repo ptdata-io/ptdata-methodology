@@ -15,10 +15,10 @@ ingest it and how versioning/linking work.
   recorded in `ingestion_run`.
 - Captured per filing: form type, filing date, exact acceptance timestamp (tz-aware), period
   of report, primary-document URL, and 8-K items.
-- **Coverage caveat:** only the `filings.recent` block (~1,000 latest filings per company) is
-  ingested so far. Full 2010-present depth requires paging `filings.files[]` — a tracked
-  follow-up. `amends_accession` linkage (restatement chains) is resolved by a later step, not
-  at index ingest.
+- **Deep history:** both the `filings.recent` block and the older `filings.files[]` pages are
+  ingested, so filing coverage spans a company's full EDGAR history. Company tickers from the
+  submissions feed are linked to securities (resolving ticker → company). `amends_accession`
+  linkage (restatement chains) is still resolved by a later step, not at index ingest.
 
 ## Implemented (6b — earnings announcement events)
 
