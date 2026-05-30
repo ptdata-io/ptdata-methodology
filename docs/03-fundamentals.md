@@ -24,7 +24,18 @@ A restatement falls straight out of the model: a later filing reporting a *diffe
 for the same period creates a new knowledge-time version and closes the prior one — nothing is
 overwritten (methodology §4). A point-in-time query returns the version knowable on the
 requested date. The earnings-event `as_reported` figures are the originally-reported values
-for the period (earliest knowledge time). This is validated against real data: e.g. GE's
+for the period (earliest knowledge time).
+
+## Logical metrics across us-gaap tags
+
+Filers tag the "same" line item under different us-gaap concepts and change tags over time
+(e.g. legacy `Revenues`, ASC-606 `RevenueFromContractWithCustomer…`, `SalesRevenueNet`; banks
+and insurers differ again). We ingest **each tag as its own faithful concept** (no lossy
+merging) and expose **logical metrics** (`revenue`, `net_income`) that resolve to whichever
+underlying tag is populated **for that fiscal period**, in a priority order. For "latest", the
+target year is the most recent across *all* candidate tags — so a discontinued higher-priority
+tag (e.g. a company that stopped using the ASC-606 tag in 2021) does not return a stale year.
+Validated across tech, banks, energy, insurers, and retail mega-caps. This is validated against real data: e.g. GE's
 2019-Q3 net income was reported one way originally and re-presented later; a query "as of"
 the earlier date returns the original figure, "as of" the later date the revised one.
 
