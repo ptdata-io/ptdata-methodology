@@ -11,9 +11,12 @@ An earnings event in ptdata is the join of four things, each point-in-time-corre
 
 `get_earnings_event(ticker, fiscal_period, window=…)` returns all four.
 
-*Status: implemented — 8-K Item 2.02 timestamps (6b) and fiscal-period attribution; served
-via `/v1/earnings-event`. The options-implied expected move (6f), realized price reaction
-(6d), and as-reported figure linkage are added as those sources land; the response omits
+*Status: implemented — 8-K Item 2.02 timestamps (6b), fiscal-period attribution, and the
+realized price reaction (6d); served via `/v1/earnings-event`. The realized T+1 reaction is
+computed from daily closes around the announcement (anchored after-close vs before-open via an
+ET/DST-aware rule); on a private instance these closes come from a broker feed (IBKR,
+split-adjusted — correct for event-window returns, not redistributable). The options-implied
+expected move (6f) and as-reported figure linkage are added as those land; the response omits
 them until then. **Fiscal attribution:** an earnings 8-K is attributed to the fiscal period
 of the periodic filing it precedes — a 10-Q gives the quarter, a 10-K gives FY. A Q4/annual
 release accompanies the 10-K and is therefore attributed to **FY**, not Q4.*
