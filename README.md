@@ -57,10 +57,13 @@ tracked in [`docs/08-known-limitations.md`](docs/08-known-limitations.md) — re
 relying on anything here.
 
 - **Universe:** S&P 500 constituents, with historical membership.
-- **Prices:** target 2000–present. **Fundamentals & earnings:** target 2010–present.
-- **Fundamentals source of record:** SEC EDGAR (public domain).
-- **Options-implied expectations:** historical EOD options analytics; coverage from the
-  earliest available chain history forward.
+- **Fundamentals & earnings:** target 2010–present. **Source of record:** SEC EDGAR (public domain).
+- **Raw prices are out of scope for the redistributable product** — by design. Prices are a
+  commodity with no public-domain source and licensing that forbids cheap redistribution; ptdata
+  serves the point-in-time *corporate* data nobody else does, and leaves prices to dedicated
+  (often free, for personal use) price sources. We *do* serve **derived** event analytics
+  (e.g. a realized earnings reaction as a return) where they're differentiated. See
+  [`docs/08-known-limitations.md`](docs/08-known-limitations.md).
 
 ## Repository layout
 

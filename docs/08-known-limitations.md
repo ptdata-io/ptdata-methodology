@@ -18,8 +18,18 @@ pass against the live service.
   a cheap reconstruction would reintroduce lookahead bias. We serve the **options-implied
   expected move** instead, which is a different quantity and is never labeled "consensus."
   Rationale: [`07-options-implied-expectations.md`](07-options-implied-expectations.md).
-- **No intraday data (MVP).** Prices and option chains are end-of-day grain. Intraday event
-  reactions are out of scope for the MVP.
+- **Raw prices are out of scope for the redistributable product (by design).** US equity
+  prices are a commodity with no public-domain source; redistribution requires paid exchange/
+  vendor licensing (hundreds–thousands/mo) for data that is *not* our differentiator. ptdata's
+  value is point-in-time *corporate* data (restatements, survivorship-free membership, filing
+  lineage, earnings timestamps) — the thing agents can't get elsewhere. For prices, use a
+  dedicated source (free for personal use: e.g. your broker, or public EOD sources). We *do*
+  serve **derived** event analytics computed internally — a realized earnings reaction (a
+  return %) and the options-implied expected move (a %) — which are differentiated and are not
+  redistribution of raw price/quote data. A price feed may be added later only if a customer
+  demand and an affordable redistribution license both materialize.
+- **No intraday data (MVP).** Option chains are end-of-day grain. Intraday event reactions are
+  out of scope for the MVP.
 - **Universe = S&P 500.** With historical membership tracked. Names outside the index are
   out of scope for the MVP.
 
@@ -62,10 +72,13 @@ pass against the live service.
   yet confirmed with OPRA/counsel**, and the chosen vendor's own terms may add restrictions.
   Until confirmed, treat the options-implied feature's commercial redistribution as
   provisional.
-- **Price-data vendor & its redistribution terms.** The daily-price source is not yet fixed.
-  Tiingo's terms forbid redistribution; Polygon/EODHD terms require direct confirmation. The
-  fundamentals path does not depend on this (EDGAR is public domain), but the price surface
-  does.
+- **Price-data redistribution (resolved → out of scope).** Research confirmed cheap vendors
+  forbid redistribution under standard tiers and gate it behind enterprise/contact-sales deals
+  (EODHD ~$2,499/mo; Twelve Data / FMP / Sharadar / Intrinio enterprise-only); only Polygon/
+  Massive's Business ToS permits re-serving to a product's own end users, and EOD/delayed data
+  is largely "not fee liable" under the SIP rules. Rather than spend on the non-differentiating
+  commodity pre-revenue, raw prices are **out of scope by design** (see above); this can be
+  revisited via Polygon/Massive if demand appears.
 - **Dissemination timestamps.** `dissemination_ts` (true wire/press-release time) is
   best-effort and frequently `estimated`/`unknown` for older events; only `sec_acceptance_ts`
   is guaranteed exact. Event windows fall back to SEC acceptance when dissemination
