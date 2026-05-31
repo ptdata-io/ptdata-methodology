@@ -7,9 +7,29 @@ open an issue on [ptdata-correctness](https://github.com/ptdata/ptdata-correctne
 
 ## Status
 
-**Pre-release.** Schema, methodology, and golden-file test cases exist; ingestion is in
-progress. No coverage claim below should be relied on until the corresponding test cases
-pass against the live service.
+**Live — initial full-universe backfill complete (2026-05-31).** The figures below are
+*measured against the production database*, not targets. Coverage is gated by the public
+correctness suite (currently `5 passed, 8 skipped, 0 failed`; skipped cases mark out-of-scope
+behavior, never a silent pass).
+
+| Measure | Value |
+|---|---|
+| Companies (EDGAR universe) | 7,992 |
+| — with fundamentals (us-gaap XBRL) | 5,975 (74.8%) |
+| — filings-only (no us-gaap XBRL — funds/trusts/foreign/small filers) | 2,017 (25.2%) |
+| Filings ingested (all form types, full history) | 6,781,984 |
+| — 8-K filings | 837,164 |
+| Earnings events (8-K Item 2.02) | 224,310 |
+| Financial facts (bitemporal versions) | 547,532 |
+| Companies with ≥1 revenue fact | 5,060 |
+| Companies with ≥1 net-income fact | 5,972 |
+| Fundamentals period floor (XBRL era) | FY2009 |
+| S&P 500 membership (distinct securities, historical) | 849 |
+| Database size | ~2.3 GB |
+
+Metrics ingested: **revenue** and **net income** only (logical metrics resolved across us-gaap
+tags; income-statement / duration concepts). Fundamentals are kept fresh by a daily incremental
+ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
 ## By design (not gaps — deliberate scope decisions)
 
@@ -30,24 +50,33 @@ pass against the live service.
   demand and an affordable redistribution license both materialize.
 - **No intraday data (MVP).** Option chains are end-of-day grain. Intraday event reactions are
   out of scope for the MVP.
-- **Universe = S&P 500.** With historical membership tracked. Names outside the index are
-  out of scope for the MVP.
+- **Universe = all EDGAR for fundamentals & filings; index *membership* = S&P 500 only.**
+  Filings and fundamentals are ingested for the full EDGAR universe (~7,992 CIKs from SEC's
+  `company_tickers.json`). Survivorship-free *index membership* is tracked for the S&P 500 only;
+  Russell 3000 / broad-index historical membership is a paid/hard data problem, out of MVP scope.
 
-## Coverage windows (targets; confirmed at launch)
+## Coverage (measured against the live database)
 
-- Prices: target 2000–present. Fundamentals & earnings: target 2010–present.
+- **Fundamentals & earnings:** measured period floor is **FY2009** (the XBRL `companyfacts`
+  era); earnings events (8-K Item 2.02) span the full filing history. Prices are out of scope.
 - **EDGAR filings:** full history is ingested (both `filings.recent` and the older
   `filings.files[]` pages). Fundamentals depth is therefore bounded by XBRL availability
   (~2009), not by filing coverage. See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` data begins ~2009. Fundamentals for
   earlier periods (e.g. Enron 2001, WorldCom 2002) cannot be served from this source and
   would require parsing pre-XBRL text filings — out of MVP scope. The correctness suite
-  includes such cases deliberately; they stay red until (if ever) a pre-XBRL source is added.
+  includes such cases deliberately, marked `skip` (documented out-of-scope), until (if ever) a
+  pre-XBRL source is added.
 - **Fundamentals (current):** only **duration** concepts (income-statement) are ingested;
   instant/balance-sheet concepts are a follow-on. Concept→tag coverage is partial (e.g.
   revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
   sparse. Facts whose source filing is outside the ingested window are skipped (lineage
   integrity), bounding fundamentals depth to filing coverage.
+- **Upstream fiscal-year sanity.** A few filers report a bogus XBRL `fy` — Excel serial dates
+  (e.g. 43101 = 2018-01-01), typos (1905, 2107), or null. ptdata does not anchor a period on an
+  implausible fiscal year (accepted range `[1990, 2100]`); such facts are skipped rather than
+  stored as junk years or aborting the company's ingest. (Initial backfill surfaced 46 such
+  facts across the universe, since removed; one company that failed on a null `fy` was recovered.)
 - **Index membership reconstruction:** S&P 500 membership is reconstructed from a free source
   (Wikipedia current + changes tables), treated as a source, not an authority. Where the
   change record is incomplete, the reconstruction errs toward **under-inclusion**: unbounded
