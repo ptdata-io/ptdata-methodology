@@ -25,14 +25,23 @@ are obtained from up to three independent signals and reconciled:
 3. **MD&A prose** — the headline figures restated in the narrative ("net income for 2000 was
    $979 million…") as an independent check.
 
-## Confidence tiers
-`extraction_confidence` reflects agreement across those signals:
-- **verified** — the value was confirmed against the primary filing during ingestion (against the
-  authoritative source document). Only verified values back golden cases; never assigned
-  automatically by the extractor.
-- **high** — ≥2 independent signals agree.
-- **medium** — a single signal produced the value.
-- **low** — signals conflicted; held for review, not served.
+## Confidence index
+
+Every parsed fact carries an **`extraction_confidence`** label, returned on every API/MCP response
+(alongside `provenance`) so consumers can filter or weight by trust. It reflects how many
+independent signals (the deterministic table parser, two independent extraction agents) agreed and
+whether the adversarial verifier confirmed:
+
+| `extraction_confidence` | Meaning | Published? |
+|---|---|---|
+| **`verified`** | All three signals (deterministic parser + both extract agents) agree **and** the verifier confirms — or the value was hand-checked against the primary filing. | yes |
+| **`high`** | Two independent agent extractions agree **and** the adversarial verifier confirms. | yes |
+| **`medium`** | A single extraction signal (no independent second could be obtained); magnitude-bounded and sanity-checked. | yes |
+| **`low` / unresolved** | Signals conflicted, or the verifier refuted, or no convergence. | **no — flagged, withheld** |
+
+XBRL-sourced facts are labeled `provenance='xbrl'` with **no** `extraction_confidence` (they are not
+extracted from text). Only parsed facts carry the index. A fact is published only at `verified`,
+`high`, or `medium`; nothing reaches the data set without independent agreement + verification.
 
 ## Integration rules (point-in-time + lineage preserved)
 - **Gap-fill only — XBRL always wins.** A parsed fact is written only when no XBRL fact exists for
