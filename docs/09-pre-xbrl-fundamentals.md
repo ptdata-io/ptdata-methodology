@@ -44,30 +44,43 @@ are obtained from up to three independent signals and reconciled:
   distinguished only by the `provenance` / `extraction_confidence` fields.
 
 ## Current coverage (measured)
-- **Parsed tier:** 3 companies, 14 facts:
-  - Enron (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M — `verified`.
-  - WorldCom/MCI (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
-    (the original pre-fraud-disclosure figures, not the MCI-group subtotal) — `verified`.
-  - Exxon Mobil (CIK 0000034088) **FY2004–2008** (10 facts) — revenue on the
-    sales-and-other-operating-revenue basis (matching the us-gaap:Revenues concept used from
-    FY2009); net income `high` (deterministic + subagent agree exactly), FY2008 `verified`; revenue
-    `medium` (single XBRL-aligned extraction). A **continuity series**: parsed FY2004–08 sits
-    directly below XOM's XBRL FY2009 ($301.5B) on the same basis — no boundary discontinuity.
+**6 companies, 42 facts** (confidence: 8 `verified`, 30 `high`, 4 `medium`; 0 flagged):
+- **Enron** (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M — `verified`.
+- **WorldCom/MCI** (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
+  (original pre-fraud-disclosure figures, not the MCI-group subtotal) — `verified`.
+- **Exxon Mobil** (CIK 0000034088) FY2004–2008 — sales-and-other-operating-revenue basis (matching
+  us-gaap:Revenues from FY2009); net income `high`/`verified`, revenue `medium`. Continuity series
+  onto XBRL FY2009 ($301.5B), same basis.
+- **Bear Stearns** (CIK 0000777001) FY2004–2007 — gross *Total revenues* ($8.4B→$16.6B) + net
+  income ($1.34B→$2.05B→$233M); the consolidated statement, NOT the Schedule-I parent-only one.
+- **General Motors** (old, CIK 0000040730) FY2004–2008 — *Total net sales and revenues*
+  ($193B→$149B) + net income incl. the −$38.7B (FY2007) and −$30.9B (FY2008) losses.
+- **General Electric** (CIK 0000040545) FY2004–2008 — *Total revenues* ($152B→$182.5B) + net
+  earnings attributable to the Company ($16.6B→$17.4B); continuity onto XBRL FY2009 ($154.4B).
 - The Enron + WorldCom facts back the `enron_2001_q3_10q` and `worldcom_2002_10q` correctness cases.
 
-**On the extraction mechanism:** interactively (in a Claude Code session) the Claude signal is
-produced by a subagent on the operator's subscription — no API key. The standalone batch tool
-(`claude_extract`, for headless/cron runs) is the only path that needs `ANTHROPIC_API_KEY`. Note
-the deterministic table parser is line-based and does **not** handle HTML filings where each cell
-renders on its own line (e.g. XOM FY2008) — there the subagent (or `claude_extract`) is the
-extraction signal, cross-checked against the primary text.
+**How the curated set was extracted (the fault-tolerant pipeline).** Bear Stearns / GM / GE / XOM
+were run through a multi-agent pipeline (`ingestion/edgar/prexbrl/pipeline*.py` +
+`workflows/prexbrl_extract.js`), one company at a time, per fiscal year: an agent **locates** the
+correct consolidated statement (rejecting the table of contents, Schedule-I parent-only,
+segment/group statements, and the balance sheet); **two independent agents extract** revenue + net
+income (citing the exact source line + scale); an adversarial agent **verifies** (right statement?
+right line? right year column? right scale/sign?), looping up to 3× on a refutation. A fact is
+**auto-loaded only when ≥2 independent signals agree AND the verifier confirms** (`verified` if the
+deterministic parser also agrees, else `high`); anything else is **flagged for human review and
+never written**. Interactively the agent signals run on the operator's Claude subscription (no API
+key); the standalone `claude_extract` batch path is the only one needing `ANTHROPIC_API_KEY`. The
+line-based deterministic parser fails on several of these formats (HTML one-cell-per-line; broker
+Schedule-I; multi-segment) — by design the two extract agents then carry the extraction, with the
+adversarial verifier as the guard against the wrong-statement trap.
 
 ## Known limitations of this tier
 - **Curated, not comprehensive.** Only the curated companies/periods are covered; absence of a
   pre-2009 value is expected, not a guarantee of non-existence.
 - **Extraction has an error profile.** Unlike XBRL (machine-tagged at the source), these values are
-  read from unstructured text. Only `verified` values are served today; the broader curated run
-  (Claude-cross-checked, `high`/`medium`) is gated behind review before exposure.
+  read from unstructured text. Every served fact is labeled by `extraction_confidence`
+  (`verified` / `high` / `medium`); facts that fail the gate (no ≥2-signal agreement, or the
+  adversarial verifier refutes) are flagged and **withheld**, never auto-loaded.
 - **`valid_range` is a calendar-year approximation** for annual parsed facts (the authoritative key
   is `(fiscal_year, fiscal_period)`; the date range is informational). Non-calendar fiscal years
   are therefore approximate in `valid_range` only.

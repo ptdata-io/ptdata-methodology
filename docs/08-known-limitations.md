@@ -20,7 +20,7 @@ out-of-scope behavior, never a silent pass).
 | Filings ingested (all form types, full history) | ~6.78M |
 | Earnings events (8-K Item 2.02) | 224,310 |
 | Financial facts — XBRL tier (bitemporal versions) | 547,532 |
-| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 14 (3 companies) |
+| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 42 (6 companies) |
 | Fundamentals period floor — XBRL tier | FY2009 |
 | S&P 500 membership (distinct securities, historical) | 849 |
 | Database size | ~2.3 GB |
@@ -30,10 +30,12 @@ tags; income-statement / duration concepts). Fundamentals are kept fresh by a da
 ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
 **Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor, a small *curated*,
-clearly-labeled, lower-confidence tier is parsed from filing text — currently Enron Q3 2001 and
-WorldCom Q1 2002 (`verified`; the original pre-collapse figures), plus Exxon Mobil FY2004–2008 (a
-continuity series below its XBRL FY2009; net income `high`/`verified`, revenue `medium`). Gap-fill
-only (XBRL always wins); never replaces structured data. Full methodology + limitations:
+clearly-labeled, lower-confidence tier is parsed from filing text via a fault-tolerant multi-agent
+pipeline (locate → 2 independent extract agents → adversarial verify → gate that auto-loads only on
+≥2-signal agreement + verify, else flags). Current set: **6 companies, 42 facts** — Enron Q3 2001,
+WorldCom Q1 2002, Exxon Mobil / Bear Stearns / General Motors / General Electric FY2004–2008
+(8 `verified`, 30 `high`, 4 `medium`; 0 flagged). Gap-fill only (XBRL always wins); never replaces
+structured data. Full methodology + limitations:
 [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 
 ## By design (not gaps — deliberate scope decisions)
