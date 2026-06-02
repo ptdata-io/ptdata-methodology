@@ -20,7 +20,7 @@ out-of-scope behavior, never a silent pass).
 | Filings ingested (all form types, full history) | ~6.78M |
 | Earnings events (8-K Item 2.02) | 224,310 |
 | Financial facts — XBRL tier (bitemporal versions) | 547,532 |
-| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 6 (3 companies) |
+| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 14 (3 companies) |
 | Fundamentals period floor — XBRL tier | FY2009 |
 | S&P 500 membership (distinct securities, historical) | 849 |
 | Database size | ~2.3 GB |
@@ -30,10 +30,10 @@ tags; income-statement / duration concepts). Fundamentals are kept fresh by a da
 ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
 **Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor, a small *curated*,
-clearly-labeled, lower-confidence tier is parsed from filing text — currently Enron Q3 2001,
-WorldCom Q1 2002 (the original, pre-collapse figures), and Exxon Mobil FY2008 (a continuity case
-below its XBRL FY2009), all `verified` against the primary filing. Gap-fill only (XBRL always
-wins); never replaces structured data. Full methodology + limitations:
+clearly-labeled, lower-confidence tier is parsed from filing text — currently Enron Q3 2001 and
+WorldCom Q1 2002 (`verified`; the original pre-collapse figures), plus Exxon Mobil FY2004–2008 (a
+continuity series below its XBRL FY2009; net income `high`/`verified`, revenue `medium`). Gap-fill
+only (XBRL always wins); never replaces structured data. Full methodology + limitations:
 [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 
 ## By design (not gaps — deliberate scope decisions)
