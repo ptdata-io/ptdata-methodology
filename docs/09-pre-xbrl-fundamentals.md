@@ -53,7 +53,10 @@ extracted from text). Only parsed facts carry the index. A fact is published onl
   distinguished only by the `provenance` / `extraction_confidence` fields.
 
 ## Current coverage (measured)
-**6 companies, 42 facts** (confidence: 8 `verified`, 30 `high`, 4 `medium`; 0 flagged):
+**12 companies, 138 facts** (confidence: 18 `verified`, 116 `high`, 4 `medium`; 0 flagged).
+Coverage grows company-by-company through a prioritized, budget-capped batch (S&P-500-historical
+names processed first) against a queue of ~2,238 pre-XBRL filers; current status is tracked in
+`ptdata-server/PREXBRL_PROGRESS.md`. The initial curated set:
 - **Enron** (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M — `verified`.
 - **WorldCom/MCI** (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
   (original pre-fraud-disclosure figures, not the MCI-group subtotal) — `verified`.
@@ -67,6 +70,26 @@ extracted from text). Only parsed facts carry the index. A fact is published onl
 - **General Electric** (CIK 0000040545) FY2004–2008 — *Total revenues* ($152B→$182.5B) + net
   earnings attributable to the Company ($16.6B→$17.4B); continuity onto XBRL FY2009 ($154.4B).
 - The Enron + WorldCom facts back the `enron_2001_q3_10q` and `worldcom_2002_10q` correctness cases.
+
+The prioritized batch (S&P-500-historical names first, FY2001–2008, same gated pipeline), 16 facts
+each (revenue + net income):
+- **Abbott** (ABT, CIK 1800), **AMD** (CIK 2488), **Air Products** (APD, CIK 2969), **Skyworks**
+  (SWKS, CIK 4127), **Howmet/Alcoa** (HWM, CIK 4281), **American Electric Power** (AEP, CIK 4904).
+
+## As reported, not normalized — discontinuities to understand
+Parsed values are **exactly as stated in the original filing**, keyed by SEC **CIK** with accession
+lineage. They are deliberately **not** restated to be comparable across two real-world breaks:
+- **Entity identity vs the current ticker.** A ticker resolves to a CIK's *current* name, but the
+  CIK's pre-2009 filings may be a predecessor's. E.g. ticker `HWM` (Howmet) → CIK 4281, whose
+  pre-2009 figures are **Alcoa Inc's** (~$20–31B revenue); `SWKS` FY2001 is **Alpha Industries**;
+  CIK 0000040730 (`GM`/"Motors Liquidation") is the *old* General Motors. The figures are correct
+  for that CIK and filing; the ticker is just the current handle. *(Roadmap: surface the as-filed
+  entity name alongside the ticker.)*
+- **Accounting-basis changes.** A revenue or income series can step for presentation, not business,
+  reasons. E.g. **AEP** revenue is $61.3B (FY2001, gross energy-trading) then $14.6B (FY2002) after
+  the **EITF 02-3** gross→net reclassification; Bear Stearns is shown gross, not net of interest;
+  Skyworks changed its fiscal year-end (March→September) in 2002, so FY2001 and FY2002 are not a
+  continuous 12-month series. Each value is the correct as-reported figure for its filing.
 
 **How the curated set was extracted (the fault-tolerant pipeline).** Bear Stearns / GM / GE / XOM
 were run through a multi-agent pipeline (`ingestion/edgar/prexbrl/pipeline*.py` +

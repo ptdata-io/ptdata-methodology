@@ -20,7 +20,7 @@ out-of-scope behavior, never a silent pass).
 | Filings ingested (all form types, full history) | ~6.78M |
 | Earnings events (8-K Item 2.02) | 224,310 |
 | Financial facts — XBRL tier (bitemporal versions) | 547,532 |
-| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 42 (6 companies) |
+| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 138 (12 companies) |
 | Fundamentals period floor — XBRL tier | FY2009 |
 | S&P 500 membership (distinct securities, historical) | 849 |
 | Database size | ~2.3 GB |
@@ -32,10 +32,13 @@ ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the la
 **Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor, a small *curated*,
 clearly-labeled, lower-confidence tier is parsed from filing text via a fault-tolerant multi-agent
 pipeline (locate → 2 independent extract agents → adversarial verify → gate that auto-loads only on
-≥2-signal agreement + verify, else flags). Current set: **6 companies, 42 facts** — Enron Q3 2001,
-WorldCom Q1 2002, Exxon Mobil / Bear Stearns / General Motors / General Electric FY2004–2008
-(8 `verified`, 30 `high`, 4 `medium`; 0 flagged). Gap-fill only (XBRL always wins); never replaces
-structured data. Full methodology + limitations:
+≥2-signal agreement + verify, else flags). Current set: **12 companies, 138 facts**
+(18 `verified`, 116 `high`, 4 `medium`; 0 flagged) — the curated names (Enron Q3 2001, WorldCom
+Q1 2002, Exxon Mobil / Bear Stearns / General Motors / General Electric FY2004–2008) plus a
+prioritized batch (Abbott, AMD, Air Products, Skyworks, Howmet/Alcoa, AEP FY2001–2008) that grows
+against a ~2,238-filer queue. Gap-fill only (XBRL always wins); never replaces structured data.
+Values are as-reported by CIK (not normalized across entity-identity or accounting-basis changes —
+see `09`). Full methodology + limitations:
 [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 
 ## By design (not gaps — deliberate scope decisions)
@@ -71,9 +74,10 @@ structured data. Full methodology + limitations:
   (~2009), not by filing coverage. See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` begins ~2009, so the *XBRL tier* floors at
   FY2009. Earlier periods are served by the separate **parsed tier** — values read from filing
-  text for a *curated* set (currently Enron Q3 2001 and WorldCom Q1 2002, human-`verified`),
-  clearly labeled `provenance='parsed'` and gap-fill only. This is curated, not comprehensive,
-  and has its own extraction error profile; see [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
+  text for a growing set (12 companies / 138 facts as of 2026-06-02, expanding via a prioritized
+  batch), clearly labeled `provenance='parsed'` and gap-fill only. This is partial, not
+  comprehensive, has its own extraction error profile, and is as-reported by CIK (not normalized
+  across entity-identity or accounting-basis changes); see [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 - **Fundamentals (current):** only **duration** concepts (income-statement) are ingested;
   instant/balance-sheet concepts are a follow-on. Concept→tag coverage is partial (e.g.
   revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
