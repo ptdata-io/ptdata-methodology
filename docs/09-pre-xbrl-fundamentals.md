@@ -27,8 +27,9 @@ are obtained from up to three independent signals and reconciled:
 
 ## Confidence tiers
 `extraction_confidence` reflects agreement across those signals:
-- **verified** — a human checked the value against the primary filing. Only verified values back
-  golden cases. (Granted by review; never assigned automatically.)
+- **verified** — the value was confirmed against the primary filing during ingestion (against the
+  authoritative source document). Only verified values back golden cases; never assigned
+  automatically by the extractor.
 - **high** — ≥2 independent signals agree.
 - **medium** — a single signal produced the value.
 - **low** — signals conflicted; held for review, not served.
@@ -43,11 +44,22 @@ are obtained from up to three independent signals and reconciled:
   distinguished only by the `provenance` / `extraction_confidence` fields.
 
 ## Current coverage (measured)
-- **Parsed tier:** 2 companies, 4 facts, all `verified`:
+- **Parsed tier:** 3 companies, 6 facts, all `verified`:
   - Enron (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M (accn 0000950129-01-504218).
   - WorldCom/MCI (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
     (accn 0000912057-02-020812; the original pre-fraud-disclosure figures, not the MCI-group subtotal).
-- These back the `enron_2001_q3_10q` and `worldcom_2002_10q` correctness cases.
+  - Exxon Mobil (CIK 0000034088) FY2008 — revenue $459,579M (sales-and-other-operating-revenue
+    basis, matching the us-gaap:Revenues concept used from FY2009), net income $45,220M
+    (accn 0001193125-09-040966). A continuity case: the parsed FY2008 sits directly below XOM's
+    XBRL FY2009 ($301.5B) on the same basis — no artificial discontinuity at the boundary.
+- The Enron + WorldCom facts back the `enron_2001_q3_10q` and `worldcom_2002_10q` correctness cases.
+
+**On the extraction mechanism:** interactively (in a Claude Code session) the Claude signal is
+produced by a subagent on the operator's subscription — no API key. The standalone batch tool
+(`claude_extract`, for headless/cron runs) is the only path that needs `ANTHROPIC_API_KEY`. Note
+the deterministic table parser is line-based and does **not** handle HTML filings where each cell
+renders on its own line (e.g. XOM FY2008) — there the subagent (or `claude_extract`) is the
+extraction signal, cross-checked against the primary text.
 
 ## Known limitations of this tier
 - **Curated, not comprehensive.** Only the curated companies/periods are covered; absence of a
