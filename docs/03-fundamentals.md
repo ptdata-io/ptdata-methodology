@@ -30,7 +30,8 @@ for the period (earliest knowledge time).
 
 Filers tag the "same" line item under different us-gaap concepts and change tags over time
 (e.g. legacy `Revenues`, ASC-606 `RevenueFromContractWithCustomer…`, `SalesRevenueNet`; banks
-and insurers differ again). We ingest **each tag as its own faithful concept** (no lossy
+and insurers differ again — they have no single revenue line at all, so they get an as-reported
+*revenue family*, see [`10-financials.md`](10-financials.md)). We ingest **each tag as its own faithful concept** (no lossy
 merging) and expose **logical metrics** (`revenue`, `net_income`) that resolve to whichever
 underlying tag is populated **for that fiscal period**, in a priority order. For "latest", the
 target year is the most recent across *all* candidate tags — so a discontinued higher-priority
