@@ -2,28 +2,37 @@
 
 SEC structured XBRL (`companyfacts`) begins ~2009. For periods before that — and for companies
 that died before it (Enron, WorldCom, Lehman) — fundamentals can only be obtained by reading the
-filing text. ptdata serves a small, **clearly-labeled, lower-confidence tier** of such values,
+filing text. ptdata serves a growing, **clearly-labeled, lower-confidence tier** of such values,
 extracted from the original filings. It is *additive* to the XBRL core and never replaces it.
 
 ## What it is
-- **Metrics:** revenue and net income only (the same logical metrics as the XBRL tier).
-- **Scope (Phase 1):** a *curated* set of high-value companies — notable defunct issuers plus a
-  few S&P stalwarts for boundary continuity — not the full pre-XBRL universe. Annual (10-K) is
-  the default; specific flagship quarters (10-Q) are included where they back a golden case.
+- **Metrics:** the same 12 logical metrics as the XBRL tier (full income statement + balance sheet +
+  cash flow), plus the financials revenue family for banks/brokers/insurers
+  ([`10-financials.md`](10-financials.md)).
+- **Scope:** a *curated* set of high-value companies (notable defunct issuers + S&P stalwarts for
+  boundary continuity) **plus a growing prioritized batch** (S&P-500-historical names first) —
+  **605 companies so far**, not yet the full pre-XBRL universe. Annual (10-K) is the default;
+  specific flagship quarters (10-Q) are included where they back a golden case.
 - **Labeling:** every value carries `provenance` and `extraction_confidence` (below). XBRL values
   are `provenance="xbrl"` with no extraction confidence; parsed values are `provenance="parsed"`.
 
 ## How values are extracted
-The financial-statements region of the primary 10-K/10-Q is isolated, then revenue + net income
-are obtained from up to three independent signals and reconciled:
-1. **Deterministic table parse** — reads the statement's scale ("in millions/thousands"), the
-   year-column header (so column *order* is irrelevant), and the exact line labels ("Total
-   revenues" / bottom-line "Net Income", not "Net income before…"). For quarterly statements that
-   show both three-month and nine-month columns, the three-month (the quarter) is taken.
-2. **Claude-assisted extraction** — the located statement text is read by an LLM that returns the
-   same fields as structured JSON (offline/batch only — never in the live service).
-3. **MD&A prose** — the headline figures restated in the narrative ("net income for 2000 was
-   $979 million…") as an independent check.
+Values come from a **fault-tolerant, multi-agent pipeline** run one company at a time, per fiscal
+year. There is no separate "locate" step that can fail closed: **two independent agents
+self-navigate** the filing (`grep` to the *consolidated* statements — rejecting the table of
+contents, the auditor's report, Schedule-I parent-company-only and segment/combined statements, and
+the separately-presented statements of a consolidated subsidiary), and each **extracts every metric**
+(full income statement, balance sheet, and cash flow), citing the exact source line and the stated
+scale ("in millions/thousands"; the year-column header so column *order* is irrelevant). An
+**adversarial verifier** then tries to *refute* each value — right statement? right line? right
+fiscal-year column? right scale/sign (capex positive, balances as-of the period end, EPS per-share)?
+The two extractions and the verifier loop up to three times on any metric that hasn't converged, and
+a **deterministic table parser** supplies a corroborating signal where the layout permits. The
+combination — independent agreement, then adversarial verification — is the correctness gate
+(below). Extraction is **sector-aware**: financials (banks/brokers/insurers) run a profile with a
+strict revenue rule + the as-reported revenue family, so a bank's "Total interest income" is never
+mis-read as revenue (see [`10-financials.md`](10-financials.md)). These agents run offline/batch,
+never in the live service.
 
 ## Confidence index
 
@@ -53,9 +62,9 @@ extracted from text). Only parsed facts carry the index. A fact is published onl
   distinguished only by the `provenance` / `extraction_confidence` fields.
 
 ## Current coverage (measured)
-**12 companies, 138 facts** (confidence: 18 `verified`, 116 `high`, 4 `medium`; 0 flagged).
+**605 companies, 40,958 facts** (confidence: 706 `verified`, 40,248 `high`, 4 `medium`; 0 flagged).
 Coverage grows company-by-company through a prioritized, budget-capped batch (S&P-500-historical
-names processed first) against a queue of ~2,238 pre-XBRL filers; current status is tracked in
+names processed first) against a queue of ~2,242 pre-XBRL filers; current status is tracked in
 `ptdata-server/PREXBRL_PROGRESS.md`. The initial curated set:
 - **Enron** (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M — `verified`.
 - **WorldCom/MCI** (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
@@ -71,10 +80,11 @@ names processed first) against a queue of ~2,238 pre-XBRL filers; current status
   earnings attributable to the Company ($16.6B→$17.4B); continuity onto XBRL FY2009 ($154.4B).
 - The Enron + WorldCom facts back the `enron_2001_q3_10q` and `worldcom_2002_10q` correctness cases.
 
-The prioritized batch (S&P-500-historical names first, FY2001–2008, same gated pipeline), 16 facts
-each (revenue + net income):
-- **Abbott** (ABT, CIK 1800), **AMD** (CIK 2488), **Air Products** (APD, CIK 2969), **Skyworks**
-  (SWKS, CIK 4127), **Howmet/Alcoa** (HWM, CIK 4281), **American Electric Power** (AEP, CIK 4904).
+Beyond the curated names, a **prioritized batch** (S&P-500-historical first, FY2001–2008, same gated
+pipeline) extracts the **full 12-metric statements** per company-year and now accounts for the bulk
+of the 329-company tier — e.g. Abbott, AMD, Air Products, Skyworks, Howmet/Alcoa, AEP, Coca-Cola,
+Colgate, Cummins, Corning, Target, Delta, and many more. The live, regenerated list is in
+`ptdata-server/PREXBRL_PROGRESS.md`.
 
 ## As reported, not normalized — discontinuities to understand
 Parsed values are **exactly as stated in the original filing**, keyed by SEC **CIK** with accession
@@ -91,20 +101,15 @@ lineage. They are deliberately **not** restated to be comparable across two real
   Skyworks changed its fiscal year-end (March→September) in 2002, so FY2001 and FY2002 are not a
   continuous 12-month series. Each value is the correct as-reported figure for its filing.
 
-**How the curated set was extracted (the fault-tolerant pipeline).** Bear Stearns / GM / GE / XOM
-were run through a multi-agent pipeline (`ingestion/edgar/prexbrl/pipeline*.py` +
-`workflows/prexbrl_extract.js`), one company at a time, per fiscal year: an agent **locates** the
-correct consolidated statement (rejecting the table of contents, Schedule-I parent-only,
-segment/group statements, and the balance sheet); **two independent agents extract** revenue + net
-income (citing the exact source line + scale); an adversarial agent **verifies** (right statement?
-right line? right year column? right scale/sign?), looping up to 3× on a refutation. A fact is
-**auto-loaded only when ≥2 independent signals agree AND the verifier confirms** (`verified` if the
-deterministic parser also agrees, else `high`); anything else is **flagged for human review and
-never written**. Interactively the agent signals run on the operator's Claude subscription (no API
-key); the standalone `claude_extract` batch path is the only one needing `ANTHROPIC_API_KEY`. The
-line-based deterministic parser fails on several of these formats (HTML one-cell-per-line; broker
-Schedule-I; multi-segment) — by design the two extract agents then carry the extraction, with the
-adversarial verifier as the guard against the wrong-statement trap.
+**Operational notes.** A fact is **auto-loaded only when ≥2 independent signals agree AND the
+verifier confirms** (`verified` if the deterministic parser also agrees, else `high`); anything else
+is **flagged for human review and never written**. The extraction agents run interactively on the
+operator's Claude subscription (no API key); a standalone `claude_extract` path (for headless
+batches) is the only one needing `ANTHROPIC_API_KEY`. The line-based deterministic parser fails on
+several pre-2009 formats (HTML one-cell-per-line; broker Schedule-I; multi-segment) — which is
+exactly why the two self-navigating extract agents carry the extraction and the adversarial verifier
+guards against the wrong-statement trap (a Schedule-I parent-only or an embedded subsidiary's
+statements read instead of the registrant's consolidated ones — e.g. Conrail inside a CSX 10-K).
 
 ## Known limitations of this tier
 - **Curated, not comprehensive.** Only the curated companies/periods are covered; absence of a

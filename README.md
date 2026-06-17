@@ -51,13 +51,17 @@ options analytics. We never label it "consensus." See
 
 ## Coverage status
 
-**Pre-release / in development.** The schema, methodology, and golden-file test cases are
-being established first; ingestion follows. Current honest scope and every known gap are
-tracked in [`docs/08-known-limitations.md`](docs/08-known-limitations.md) — read it before
-relying on anything here.
+**Pre-launch — code-complete, full backfill done, not yet deployed to a public URL.** The
+measured coverage and every known gap are tracked in
+[`docs/08-known-limitations.md`](docs/08-known-limitations.md) — read it before relying on anything
+here.
 
-- **Universe:** S&P 500 constituents, with historical membership.
-- **Fundamentals & earnings:** target 2010–present. **Source of record:** SEC EDGAR (public domain).
+- **Universe:** all EDGAR (~8,000 companies) for fundamentals & filings; **S&P 500 only** for
+  survivorship-free historical index membership.
+- **Fundamentals:** full statements (12 metrics — income, balance sheet, cash flow) for **FY2009→
+  present** (the SEC XBRL era), plus a clearly-labeled **parsed pre-XBRL tier** for FY2001–2008;
+  banks/brokers/insurers get an as-reported **revenue family** ([`docs/10-financials.md`](docs/10-financials.md)).
+  Earnings (8-K timestamps) span the full filing history. **Source of record:** SEC EDGAR (public domain).
 - **Raw prices are out of scope for the redistributable product** — by design. Prices are a
   commodity with no public-domain source and licensing that forbids cheap redistribution; ptdata
   serves the point-in-time *corporate* data nobody else does, and leaves prices to dedicated
@@ -78,6 +82,8 @@ relying on anything here.
 | [`06-earnings-events.md`](docs/06-earnings-events.md) | 8-K timestamping, as-reported figures, event windows |
 | [`07-options-implied-expectations.md`](docs/07-options-implied-expectations.md) | Options-implied expected move; data source; licensing basis |
 | [`08-known-limitations.md`](docs/08-known-limitations.md) | Explicit caveats and coverage gaps |
+| [`09-pre-xbrl-fundamentals.md`](docs/09-pre-xbrl-fundamentals.md) | The parsed tier: pre-2009 fundamentals, confidence index |
+| [`10-financials.md`](docs/10-financials.md) | Banks/brokers/insurers: the as-reported revenue family |
 
 ## License
 

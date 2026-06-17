@@ -14,29 +14,30 @@ out-of-scope behavior, never a silent pass).
 
 | Measure | Value |
 |---|---|
-| Companies (EDGAR universe + curated pre-XBRL) | 7,994 |
-| — with fundamentals (us-gaap XBRL) | 5,975 (74.8%) |
-| — filings-only (no us-gaap XBRL — funds/trusts/foreign/small filers) | 2,017 (25.2%) |
-| Filings ingested (all form types, full history) | ~6.78M |
-| Earnings events (8-K Item 2.02) | 224,310 |
-| Financial facts — XBRL tier (bitemporal versions) | 547,532 |
-| Financial facts — parsed pre-XBRL tier (`provenance='parsed'`) | 138 (12 companies) |
-| Fundamentals period floor — XBRL tier | FY2009 |
-| S&P 500 membership (distinct securities, historical) | 849 |
-| Database size | ~2.3 GB |
+| Companies (EDGAR universe + curated historical) | ~8,305 |
+| — with fundamentals (XBRL or parsed tier) | 6,226 (75.0%) |
+| — filings-only (no fundamentals — funds/trusts/foreign/small filers) | 2,079 (25.0%) |
+| Filings ingested (all form types, full history) | ~7.22M |
+| Earnings events (8-K Item 2.02) | ~236,700 |
+| Financial facts (point-in-time) | ~2.27M |
+| Fundamentals coverage | FY2009+ (XBRL), plus a parsed pre-XBRL tier for FY2001–2008 |
+| S&P 500 membership (distinct securities, historical) | ~1,256 |
 
-Metrics ingested: **revenue** and **net income** only (logical metrics resolved across us-gaap
-tags; income-statement / duration concepts). Fundamentals are kept fresh by a daily incremental
-ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
+Metrics ingested: **12 logical metrics** — full income statement + balance sheet + cash flow
+(revenue, operating income, EBIT, net income, diluted EPS; operating cash flow, capex; total
+assets, total liabilities, equity, cash, long-term debt) — resolved across us-gaap tags. Banks,
+brokers, and insurers additionally get an as-reported **revenue family** (they have no single
+revenue line); see [`10-financials.md`](10-financials.md). Fundamentals are kept fresh by a daily
+incremental ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
 **Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor, a small *curated*,
 clearly-labeled, lower-confidence tier is parsed from filing text via a fault-tolerant multi-agent
 pipeline (locate → 2 independent extract agents → adversarial verify → gate that auto-loads only on
-≥2-signal agreement + verify, else flags). Current set: **12 companies, 138 facts**
-(18 `verified`, 116 `high`, 4 `medium`; 0 flagged) — the curated names (Enron Q3 2001, WorldCom
+≥2-signal agreement + verify, else flags). Current set: **605 companies, 40,958 facts**
+(437 `verified`, 22,775 `high`, 4 `medium`; 0 flagged) — the curated names (Enron Q3 2001, WorldCom
 Q1 2002, Exxon Mobil / Bear Stearns / General Motors / General Electric FY2004–2008) plus a
-prioritized batch (Abbott, AMD, Air Products, Skyworks, Howmet/Alcoa, AEP FY2001–2008) that grows
-against a ~2,238-filer queue. Gap-fill only (XBRL always wins); never replaces structured data.
+prioritized batch (S&P-500-historical names first) that grows against a ~2,242-filer queue. Gap-fill
+only (XBRL always wins); never replaces structured data.
 Values are as-reported by CIK (not normalized across entity-identity or accounting-basis changes —
 see `09`). Full methodology + limitations:
 [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
@@ -74,26 +75,38 @@ see `09`). Full methodology + limitations:
   (~2009), not by filing coverage. See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` begins ~2009, so the *XBRL tier* floors at
   FY2009. Earlier periods are served by the separate **parsed tier** — values read from filing
-  text for a growing set (12 companies / 138 facts as of 2026-06-02, expanding via a prioritized
+  text for a growing set (605 companies / 40,958 facts, expanding via a prioritized
   batch), clearly labeled `provenance='parsed'` and gap-fill only. This is partial, not
   comprehensive, has its own extraction error profile, and is as-reported by CIK (not normalized
   across entity-identity or accounting-basis changes); see [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
-- **Fundamentals (current):** only **duration** concepts (income-statement) are ingested;
-  instant/balance-sheet concepts are a follow-on. Concept→tag coverage is partial (e.g.
-  revenue spans `Revenues` and ASC-606 tags; not all are mapped yet), so some metrics are
-  sparse. Facts whose source filing is outside the ingested window are skipped (lineage
-  integrity), bounding fundamentals depth to filing coverage.
+- **Fundamentals (current):** full statements are ingested — income statement, **balance sheet,
+  and cash flow** (12 logical metrics; instant balance-sheet concepts are stored as point-in-time
+  snapshots). Concept→tag coverage is resolved across multiple us-gaap tags per metric (e.g.
+  revenue spans `Revenues`, ASC-606, and `SalesRevenueNet`; long-term debt and capex coalesce
+  several variant tags), so a metric a filer doesn't tag is sparse/absent rather than wrong. Facts
+  whose source filing is outside the ingested window are skipped (lineage integrity), bounding
+  fundamentals depth to filing coverage.
+- **Financials (banks / brokers / insurers).** These filers have no single "revenue" line, so
+  rather than synthesize one we serve an as-reported **revenue family** (`net_interest_income`,
+  `noninterest_income`, `total_net_revenue`, `premiums_earned`, `net_investment_income`, and
+  `total_revenue` where a grand total is printed); a financial is covered when it reports ≥1
+  member, and an unavailable `revenue` returns guidance pointing to the family rather than a
+  null. Residual uncovered cases are structural — revenue-less ETF/crypto trusts (SIC 6221) and
+  foreign IFRS-tagged filers. Full methodology: [`10-financials.md`](10-financials.md).
 - **Upstream fiscal-year sanity.** A few filers report a bogus XBRL `fy` — Excel serial dates
   (e.g. 43101 = 2018-01-01), typos (1905, 2107), or null. ptdata does not anchor a period on an
   implausible fiscal year (accepted range `[1990, 2100]`); such facts are skipped rather than
   stored as junk years or aborting the company's ingest. (Initial backfill surfaced 46 such
   facts across the universe, since removed; one company that failed on a null `fy` was recovered.)
-- **Index membership reconstruction:** S&P 500 membership is reconstructed from a free source
-  (Wikipedia current + changes tables), treated as a source, not an authority. Where the
-  change record is incomplete, the reconstruction errs toward **under-inclusion**: unbounded
-  dangling additions are dropped, and overlapping per-ticker intervals are deduped (most
-  recent kept). Historical member counts are therefore approximate (typically ~500–515).
-  Securities are keyed by ticker pending CIK linkage. See [`05-index-membership.md`](05-index-membership.md).
+- **Index membership reconstruction:** S&P 500 membership is reconstructed from a dated historical
+  constituent roster (the community-maintained `fja05680` dataset, 1996+), treated as a source, not
+  an authority. Every ticker→CIK mapping is **EDGAR-verified** (the ticker must appear on the
+  issuer's 10-K cover in that era) or accepted on exact EDGAR-name identity — **no bare-ticker
+  guesses**. Where the change record or the cover-page index is incomplete the reconstruction errs
+  toward **under-inclusion**: unverified/dangling spans are omitted, never guessed, so coverage is a
+  conservative floor that thins pre-2010 (as-of counts ≈ 504 in 2024, ≈ 490 in 2008, ≈ 448 in 2000).
+  Each constituent carries its stable `cik` + current `name` alongside the era-correct as-of-date
+  ticker. See [`05-index-membership.md`](05-index-membership.md).
 - **Restatement vs. recast:** facts are attributed to their actual period (by end date), so
   prior-year comparative *columns* no longer contaminate the filing's own period. A later
   filing reporting a *different* value for a period still creates a new knowledge-time version
