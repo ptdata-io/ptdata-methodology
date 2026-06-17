@@ -45,7 +45,7 @@ whether the adversarial verifier confirmed:
 |---|---|---|
 | **`verified`** | All three signals (deterministic parser + both extract agents) agree **and** the verifier confirms — or the value was hand-checked against the primary filing. | yes |
 | **`high`** | Two independent agent extractions agree **and** the adversarial verifier confirms. | yes |
-| **`medium`** | A single extraction signal that the adversarial verifier confirmed against the filing (the second independent extraction did not corroborate); magnitude-bounded. | yes |
+| **`medium`** | A value the adversarial verifier confirmed against the filing, adjudicated across both extractions (so a value one extractor missed can still qualify), where the two extractions did not independently agree; magnitude-bounded. | yes |
 | **`low` / unresolved** | Signals conflicted, or the verifier refuted, or no convergence. | **no — flagged, withheld** |
 
 XBRL-sourced facts are labeled `provenance='xbrl'` with **no** `extraction_confidence` (they are not
