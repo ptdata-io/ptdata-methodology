@@ -86,6 +86,17 @@ of the 329-company tier — e.g. Abbott, AMD, Air Products, Skyworks, Howmet/Alc
 Colgate, Cummins, Corning, Target, Delta, and many more. The live, regenerated list is in
 `ptdata-server/PREXBRL_PROGRESS.md`.
 
+**Reliable-era floor (FY2001).** The parsed tier extracts fiscal years **2001–2008** only — the
+window where consolidated-statement HTML is reliably machine-readable, ending where XBRL takes over
+(2009). A consequence for S&P-historical coverage: a handful of index members whose *last* 10-K
+predates FY2001 have **no in-scope filing to parse** and are therefore structurally out of scope, not
+a coverage gap. These are companies acquired or merged during 2001 (e.g. Quaker Oats → PepsiCo,
+ALZA → J&J, American General → AIG, Tosco → Phillips, Homestake Mining → Barrick). Their newest
+10-K is FY2000 or earlier, so there is nothing to extract in the covered window. Progress metrics
+count only in-scope names in the denominator so the ratio is not misleadingly short; the excluded
+below-floor CIKs are reported separately. (Defunct issuers that *did* file into 2001 — Enron,
+WorldCom — are covered via their in-scope quarterly filings; see above.)
+
 ## As reported, not normalized — discontinuities to understand
 Parsed values are **exactly as stated in the original filing**, keyed by SEC **CIK** with accession
 lineage. They are deliberately **not** restated to be comparable across two real-world breaks:
