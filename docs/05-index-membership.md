@@ -1,19 +1,21 @@
 # 05 — Index membership (survivorship-free, as-of-date)
 
-*Status: implemented and served for the S&P 500. Reconstructed from a dated historical
-constituent roster, with every ticker→CIK mapping EDGAR-verified.*
+*Status: implemented and served for the **S&P 500** and the **Dow Jones Industrial Average
+(DJIA)**. Each index is reconstructed from a dated historical change log / roster, with
+ticker→CIK mappings EDGAR-verified where possible (Policy B for unresolved identity — see
+DJIA below).*
 
 ## How it works
 
-We take a **dated historical constituent roster** (the community-maintained `fja05680` S&P 500
-dataset: a current-members table plus a changes table of additions/removals back to 1996) and
+We take a **dated historical constituent roster** (per index — see sections below) and
 **reconstruct** membership intervals by walking the change events from the current snapshot: an
 "added on D" begins a membership at D; a "removed on D" ends one at D; a current member with no
 relevant change has an unknown (pre-coverage) start and an open end. Intervals are stored
 bitemporally in `index_membership` (valid time = membership span; knowledge time = our
 reconstruction — see [`01-bitemporal-model.md`](01-bitemporal-model.md)). A point-in-time query
 `get_index_constituents(index, as_of_date)` returns the constituents as understood on that date —
-survivorship-free.
+survivorship-free. The query path is **index-generic** (`SP500`, `DJIA`, …); only the loaded
+source data differs.
 
 The roster is treated as a **source, not an authority**. Reconstruction quality is bounded by the
 completeness of the change record; where it is incomplete we err toward **under-inclusion** (see
@@ -43,7 +45,7 @@ Each constituent returned therefore carries its **stable identity** alongside th
 
 ## What this guarantees
 
-`get_index_constituents("SP500", as_of_date)` returns membership as it was *understood on*
+`get_index_constituents(index, as_of_date)` returns membership as it was *understood on*
 `as_of_date`, surviving the two classic biases:
 
 - **survivorship** — dropped names (failed/acquired) are still present for the dates they were
@@ -51,7 +53,14 @@ Each constituent returned therefore carries its **stable identity** alongside th
 - **announce-ahead** — a name is added on its *effective* date, not its announcement date, unless
   queried by announcement knowledge time.
 
-## Coverage floor (honest, conservative)
+## S&P 500
+
+Reconstructed from the community-maintained `fja05680` S&P 500 dataset: a current-members table
+plus a changes table of additions/removals back to 1996. Every ticker→CIK mapping is
+EDGAR-verified (cover-page / full-text) or accepted on exact EDGAR-name identity — **no bare-ticker
+guesses**.
+
+### Coverage floor (honest, conservative)
 
 Because a ticker-span is included only when verified, coverage is a **conservative floor that
 thins the further back you go**. Approximate as-of-date constituent counts: 2024 ≈ 504, 2015 ≈ 495,
@@ -61,15 +70,58 @@ identity ambiguities — are **omitted, never guessed**. A queried pre-2010 date
 slightly fewer than 500 names; every name returned is verified-correct, but the set is not
 guaranteed complete for older dates. See [`08-known-limitations.md`](08-known-limitations.md).
 
-## Worked reference (golden test cases)
+### Worked reference (golden test cases)
 
 - **Lehman Brothers (LEH)**: a member on 2008-09-14; absent by 2008-09-22 (removal effective
   2008-09-16). The membership row's `valid_to` is the removal effective date.
 - **Tesla (TSLA)**: absent on 2020-12-20, present on 2020-12-21 (inclusion effective date).
 
+## DJIA
+
+Survivorship-free as-of-date membership for the Dow Jones Industrial Average (`DJIA`), reconstructed
+from the Wikipedia [Historical components of the Dow Jones Industrial Average](https://en.wikipedia.org/wiki/Historical_components_of_the_Dow_Jones_Industrial_Average)
+change chronology (retrieved 2026-07-12), with recent ticker confirmation against yfiua monthly
+snapshots. Source token on stored rows: **`wikipedia-djia+efts`**. Same reconstruction and
+identity rules as SP500 (era-correct tickers; EDGAR-verified ticker→CIK where possible).
+
+**Policy B (identity):** served constituents may carry `cik=null` for pre-EDGAR / unresolved
+identity when the membership span is still sourced. Prefer resolved CIKs whenever EDGAR /
+`company_tickers` can verify. **Never invent CIKs.** This is stricter on inventing mappings than
+on omitting CIK; under-include membership only when the change log itself cannot support a span.
+
+**Not an official S&P DJI product** — research reconstruction from public sources; do not treat as
+a licensed official constituent feed.
+
+### Coverage floor
+
+The modern DJIA has **30** members; as-of counts are **near-complete for recent decades** and may
+under-count where the free change log is incomplete (especially very deep history or ambiguous
+ticker mappings). **Measured as-of counts (2026-07-12, production DB):**
+
+| as_of_date | constituents |
+|---|---:|
+| 2000-06-30 | 29 |
+| 2005-06-30 | 30 |
+| 2008-09-15 | 30 |
+| 2015-03-19 | 30 |
+| 2020-06-30 | 30 |
+| 2024-06-30 | 30 |
+
+Do **not** claim exactly 30 names on every historical date. Coverage floor for modern PIT use is
+essentially full (29–30 from ~2000 onward in the measured sample); earlier eras follow the Wikipedia
+chronology and may include long-lived intervals whose CIK is null under Policy B when EDGAR cannot
+verify.
+
+### Worked reference (golden test cases)
+
+- **Apple (AAPL)**: absent on 2015-03-18, present on 2015-03-19 (inclusion effective date; replaced
+  AT&T / `T` the same day).
+- **General Electric (GE)**: a member on 2018-06-25; absent on 2018-06-26 (removal effective date;
+  replaced by Walgreens Boots Alliance / `WBA`) — survivorship-free long-tenured removal.
+
 ## Scope
 
-Deep survivorship-free **as-of-date membership is served for the S&P 500**. DJIA and Nasdaq-100
-company *universes* have been added to fundamentals/filings coverage, with as-of-date membership
-serving rolling out (current-forward for Nasdaq-100, where a reliable free deep history exists).
+Deep survivorship-free **as-of-date membership is served for the S&P 500 and the DJIA**. Nasdaq-100
+company *universe* has been added to fundamentals/filings coverage; as-of-date membership for NDX
+is current-forward only (a reliable free deep history does not exist — we will not fabricate it).
 Russell 3000 / broad-index historical membership remains a paid/hard data problem, out of scope.

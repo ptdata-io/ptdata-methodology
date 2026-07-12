@@ -56,8 +56,8 @@ measured coverage and every known gap are tracked in
 [`docs/08-known-limitations.md`](docs/08-known-limitations.md) — read it before relying on anything
 here.
 
-- **Universe:** all EDGAR (~8,000 companies) for fundamentals & filings; **S&P 500 only** for
-  survivorship-free historical index membership.
+- **Universe:** all EDGAR (~8,000 companies) for fundamentals & filings; **S&P 500 + DJIA** for
+  survivorship-free historical index membership (NDX current-forward only).
 - **Fundamentals:** full statements (12 metrics — income, balance sheet, cash flow) for **FY2009→
   present** (the SEC XBRL era), plus a clearly-labeled **parsed pre-XBRL tier** for FY2001–2008;
   banks/brokers/insurers get an as-reported **revenue family** ([`docs/10-financials.md`](docs/10-financials.md)).

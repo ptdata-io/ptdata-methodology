@@ -9,7 +9,7 @@ open an issue on [ptdata-correctness](https://github.com/ptdata/ptdata-correctne
 
 **Live — full-universe backfill complete (2026-05-31); pre-XBRL parsed tier added (2026-06-02).**
 The figures below are *measured against the production database*, not targets. Coverage is gated by
-the public correctness suite (currently `7 passed, 6 skipped, 0 failed`; skipped cases mark
+the public correctness suite (currently `9 passed, 6 skipped, 0 failed`; skipped cases mark
 out-of-scope behavior, never a silent pass).
 
 | Measure | Value |
@@ -22,6 +22,7 @@ out-of-scope behavior, never a silent pass).
 | Financial facts (point-in-time) | ~2.27M |
 | Fundamentals coverage | FY2009+ (XBRL), plus a parsed pre-XBRL tier for FY2001–2008 |
 | S&P 500 membership (distinct securities, historical) | ~1,256 |
+| DJIA membership (distinct securities, historical) | ~70 (source: wikipedia-djia+efts) |
 
 Metrics ingested: **12 logical metrics** — full income statement + balance sheet + cash flow
 (revenue, operating income, EBIT, net income, diluted EPS; operating cash flow, capex; total
@@ -61,10 +62,11 @@ see `09`). Full methodology + limitations:
   demand and an affordable redistribution license both materialize.
 - **No intraday data (MVP).** Option chains are end-of-day grain. Intraday event reactions are
   out of scope for the MVP.
-- **Universe = all EDGAR for fundamentals & filings; index *membership* = S&P 500 only.**
+- **Universe = all EDGAR for fundamentals & filings; index *membership* = S&P 500 + DJIA.**
   Filings and fundamentals are ingested for the full EDGAR universe (~7,992 CIKs from SEC's
-  `company_tickers.json`). Survivorship-free *index membership* is tracked for the S&P 500 only;
-  Russell 3000 / broad-index historical membership is a paid/hard data problem, out of MVP scope.
+  `company_tickers.json`). Survivorship-free *index membership* is tracked for the S&P 500 and
+  the DJIA; Nasdaq-100 is current-forward only (no free reliable deep history). Russell 3000 /
+  broad-index historical membership is a paid/hard data problem, out of MVP scope.
 
 ## Coverage (measured against the live database)
 
@@ -107,6 +109,14 @@ see `09`). Full methodology + limitations:
   conservative floor that thins pre-2010 (as-of counts ≈ 504 in 2024, ≈ 490 in 2008, ≈ 448 in 2000).
   Each constituent carries its stable `cik` + current `name` alongside the era-correct as-of-date
   ticker. See [`05-index-membership.md`](05-index-membership.md).
+- **DJIA membership reconstruction:** DJIA (`index` code `DJIA`) is reconstructed from the Wikipedia
+  historical-components change chronology plus recent yfiua snapshot confirmation; stored source
+  token **`wikipedia-djia+efts`**. Same interval reconstruction and era-correct ticker rules as
+  SP500. **Policy B:** `cik` may be null for pre-EDGAR / unresolved identity; CIKs are never
+  invented. Not an official S&P DJI feed. **Measured as-of counts (2026-07-12):** 2000-06-30 ≈ 29,
+  2008-09-15 = 30, 2024-06-30 = 30 (modern decades near-complete; do not claim exactly 30 on every
+  historical date). Golden cases: AAPL inclusion effective 2015-03-19; GE removal effective
+  2018-06-26.
 - **Restatement vs. recast:** facts are attributed to their actual period (by end date), so
   prior-year comparative *columns* no longer contaminate the filing's own period. A later
   filing reporting a *different* value for a period still creates a new knowledge-time version
