@@ -134,3 +134,12 @@ notes (modern era ~2011→present). Same identity rules as SP500/DJIA (Policy B:
 never invent CIKs). Depth is **shallower** than DJIA: no free full historical
 change chronology. Measured as-of counts (2026-07-12): modern dates ≈ **20**
 components; pre-2011 history is a conservative floor via open-start intervals.
+
+## NDX (Nasdaq-100)
+
+Survivorship-free as-of-date membership for the Nasdaq-100 (`NDX`), reconstructed from
+free **monthly** constituent snapshots (yfiua/index-constituents, ~2023-07→present).
+Same identity rules as other indices. **Depth is deliberately shallow**: there is no
+reliable free multi-decade Nasdaq-100 change log suitable for redistribution. Add/remove
+dates are the snapshot month when first observed, not necessarily the official rebalance
+effective date. Measured as-of counts (2026-07-12): mid-2023 ≈ 100, 2024–2026 ≈ 100–101.
