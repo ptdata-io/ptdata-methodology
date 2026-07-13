@@ -125,3 +125,12 @@ Deep survivorship-free **as-of-date membership is served for the S&P 500 and the
 company *universe* has been added to fundamentals/filings coverage; as-of-date membership for NDX
 is current-forward only (a reliable free deep history does not exist — we will not fabricate it).
 Russell 3000 / broad-index historical membership remains a paid/hard data problem, out of scope.
+
+## DJT (Dow Jones Transportation Average)
+
+Survivorship-free as-of-date membership for the Dow Jones Transportation Average
+(`DJT` / DJTA), reconstructed from the Wikipedia component table and prose change
+notes (modern era ~2011→present). Same identity rules as SP500/DJIA (Policy B:
+never invent CIKs). Depth is **shallower** than DJIA: no free full historical
+change chronology. Measured as-of counts (2026-07-12): modern dates ≈ **20**
+components; pre-2011 history is a conservative floor via open-start intervals.
