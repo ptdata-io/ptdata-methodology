@@ -143,3 +143,10 @@ Same identity rules as other indices. **Depth is deliberately shallow**: there i
 reliable free multi-decade Nasdaq-100 change log suitable for redistribution. Add/remove
 dates are the snapshot month when first observed, not necessarily the official rebalance
 effective date. Measured as-of counts (2026-07-12): mid-2023 ≈ 100, 2024–2026 ≈ 100–101.
+
+## DJU (Dow Jones Utility Average)
+
+Survivorship-free as-of-date membership for the Dow Jones Utility Average (`DJU` / DJUA),
+reconstructed from the Wikipedia component table and Former components prose (modern changes
+~2014→present). Same identity rules as other Dow indices. Depth is modern-only; pre-2014
+as-of queries under-include. Measured as-of counts (2026-07-12): 2014-10-01→present ≈ **15**.
