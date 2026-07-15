@@ -124,7 +124,7 @@ with structured guidance:
     "revenue": {
       "reason": "GS is a broker (SIC 6211) and does not report a single 'revenue' line. Financials report revenue as an as-reported FAMILY of subtotals, never a synthesized total. Use available_alternatives.",
       "available_alternatives": ["total_net_revenue", "net_interest_income", "noninterest_income"],
-      "docs_url": "https://github.com/DurandalTechnologies/ptdata-methodology/blob/main/docs/10-financials.md"
+      "docs_url": "https://github.com/ptdata-io/ptdata-methodology/blob/main/docs/10-financials.md"
     }
   }
 }
