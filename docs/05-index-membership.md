@@ -1,9 +1,9 @@
 # 05 — Index membership (survivorship-free, as-of-date)
 
-*Status: implemented and served for the **S&P 500** and the **Dow Jones Industrial Average
-(DJIA)**. Each index is reconstructed from a dated historical change log / roster, with
-ticker→CIK mappings EDGAR-verified where possible (Policy B for unresolved identity — see
-DJIA below).*
+*Status: implemented and served for **S&P 500, DJIA, NDX, DJT, and DJU**. Each index is
+reconstructed from a dated historical change log / roster (depth varies by index — see
+sections below), with ticker→CIK mappings EDGAR-verified where possible (Policy B for
+unresolved identity — never invent CIKs).*
 
 ## How it works
 
@@ -121,10 +121,10 @@ verify.
 
 ## Scope
 
-Deep survivorship-free **as-of-date membership is served for the S&P 500 and the DJIA**. Nasdaq-100
-company *universe* has been added to fundamentals/filings coverage; as-of-date membership for NDX
-is current-forward only (a reliable free deep history does not exist — we will not fabricate it).
-Russell 3000 / broad-index historical membership remains a paid/hard data problem, out of scope.
+Survivorship-free **as-of-date membership** is served for **S&P 500, DJIA, NDX, DJT, and DJU**.
+Depth and source quality **differ by index** (SP500/DJIA are deepest; NDX is monthly modern-only;
+DJT/DJU are modern-era floors — see sections below). Russell 3000 / broad-index multi-decade
+membership remains a paid/hard data problem, out of scope.
 
 ## DJT (Dow Jones Transportation Average)
 

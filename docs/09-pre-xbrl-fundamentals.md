@@ -11,8 +11,9 @@ extracted from the original filings. It is *additive* to the XBRL core and never
   ([`10-financials.md`](10-financials.md)).
 - **Scope:** a *curated* set of high-value companies (notable defunct issuers + S&P stalwarts for
   boundary continuity) **plus a growing prioritized batch** (S&P-500-historical names first) —
-  **605 companies so far**, not yet the full pre-XBRL universe. Annual (10-K) is the default;
-  specific flagship quarters (10-Q) are included where they back a golden case.
+  **~1,500+ companies so far** (growing; measured on production), not yet the full pre-XBRL
+  universe. Annual (10-K) is the default; specific flagship quarters (10-Q) are included where
+  they back a golden case.
 - **Labeling:** every value carries `provenance` and `extraction_confidence` (below). XBRL values
   are `provenance="xbrl"` with no extraction confidence; parsed values are `provenance="parsed"`.
 
@@ -62,10 +63,12 @@ extracted from text). Only parsed facts carry the index. A fact is published onl
   distinguished only by the `provenance` / `extraction_confidence` fields.
 
 ## Current coverage (measured)
-**605 companies, 40,958 facts** (confidence: 706 `verified`, 40,248 `high`, 4 `medium`; 0 flagged).
-Coverage grows company-by-company through a prioritized, budget-capped batch (S&P-500-historical
-names processed first) against a queue of ~2,242 pre-XBRL filers; current status is tracked in
-`ptdata-server/PREXBRL_PROGRESS.md`. The initial curated set:
+**Production (2026-07-23):** ~**1,539 companies** with current parsed facts, ~**103,781** current
+parsed facts (confidence: ~1,681 `verified`, ~99,376 `high`, ~2,724 `medium`). Coverage grows
+company-by-company through prioritized offline batches (S&P-500-historical names first); operators
+track progress in the private `ptdata-server` repo (`PREXBRL_PROGRESS.md` / batch runs). Counts
+change as batches ship to production — treat these as order-of-magnitude, not a frozen guarantee.
+The initial curated set includes:
 - **Enron** (CIK 0001024401) Q3 2001 — revenue $46,877M, net income $(644)M — `verified`.
 - **WorldCom/MCI** (CIK 0000723527) Q1 2002 — *consolidated* revenue $8,120M, net income $172M
   (original pre-fraud-disclosure figures, not the MCI-group subtotal) — `verified`.

@@ -3,26 +3,28 @@
 The moat of this product is honesty about what it does and does not guarantee. This document
 is the canonical statement of current limitations and coverage gaps. It is updated whenever
 behavior changes. If you find a gap not listed here, that is a bug in this document — please
-open an issue on [ptdata-correctness](https://github.com/ptdata/ptdata-correctness).
+open an issue on [ptdata-correctness](https://github.com/ptdata-io/ptdata-correctness).
 
 ## Status
 
-**Live — full-universe backfill complete (2026-05-31); pre-XBRL parsed tier added (2026-06-02).**
-The figures below are *measured against the production database*, not targets. Coverage is gated by
-the public correctness suite (currently `9 passed, 6 skipped, 0 failed`; skipped cases mark
+**Live public API:** [https://api.ptdata.io](https://api.ptdata.io). Full-universe EDGAR backfill
+complete; pre-XBRL parsed tier in production and growing; daily EDGAR incremental ingestion keeps
+fundamentals/filings fresh. The figures below are *measured against the production database*
+(2026-07-23), not targets. Coverage is gated by the public correctness suite (currently
+**`12 passed, 6 skipped, 0 failed`** against `https://api.ptdata.io`; skipped cases mark
 out-of-scope behavior, never a silent pass).
 
 | Measure | Value |
 |---|---|
-| Companies (EDGAR universe + curated historical) | ~8,305 |
-| — with fundamentals (XBRL or parsed tier) | 6,226 (75.0%) |
-| — filings-only (no fundamentals — funds/trusts/foreign/small filers) | 2,079 (25.0%) |
-| Filings ingested (all form types, full history) | ~7.22M |
-| Earnings events (8-K Item 2.02) | ~236,700 |
-| Financial facts (point-in-time) | ~2.27M |
-| Fundamentals coverage | FY2009+ (XBRL), plus a parsed pre-XBRL tier for FY2001–2008 |
+| Companies (EDGAR universe + curated historical) | ~8,318 |
+| — with fundamentals (XBRL or parsed tier) | ~6,306 (~76%) |
+| — filings-only (no fundamentals — funds/trusts/foreign/small filers) | ~2,012 (~24%) |
+| Filings ingested (all form types, full history) | ~7.25M |
+| Earnings events (8-K Item 2.02) | ~237,400 |
+| Financial facts (point-in-time) | ~2.53M |
+| Fundamentals coverage | FY2009+ (XBRL), plus a growing parsed pre-XBRL tier |
 | S&P 500 membership (distinct securities, historical) | ~1,256 |
-| DJIA membership (distinct securities, historical) | ~70 (source: wikipedia-djia+efts) |
+| DJIA / NDX / DJT / DJU membership | served (depth varies — see below) |
 
 Metrics ingested: **12 logical metrics** — full income statement + balance sheet + cash flow
 (revenue, operating income, EBIT, net income, diluted EPS; operating cash flow, capex; total
@@ -31,14 +33,13 @@ brokers, and insurers additionally get an as-reported **revenue family** (they h
 revenue line); see [`10-financials.md`](10-financials.md). Fundamentals are kept fresh by a daily
 incremental ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
-**Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor, a small *curated*,
-clearly-labeled, lower-confidence tier is parsed from filing text via a fault-tolerant multi-agent
-pipeline (locate → 2 independent extract agents → adversarial verify → gate that auto-loads only on
-≥2-signal agreement + verify, else flags). Current set: **605 companies, 40,958 facts**
-(437 `verified`, 22,775 `high`, 4 `medium`; 0 flagged) — the curated names (Enron Q3 2001, WorldCom
-Q1 2002, Exxon Mobil / Bear Stearns / General Motors / General Electric FY2004–2008) plus a
-prioritized batch (S&P-500-historical names first) that grows against a ~2,242-filer queue. Gap-fill
-only (XBRL always wins); never replaces structured data.
+**Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor (and for some
+defunct issuers), a *curated + batch* clearly-labeled, lower-confidence tier is parsed from filing
+text via a fault-tolerant multi-agent pipeline (2 independent extract agents → adversarial verify →
+gate that auto-loads only on agreement + verify, else withholds). **Measured (2026-07-23):**
+**~1,539 companies** with current parsed facts, **~103,781** current parsed facts
+(~1,681 `verified`, ~99,376 `high`, ~2,724 `medium`). Still a growing subset of the pre-XBRL
+universe, not comprehensive. Gap-fill only (XBRL always wins); never replaces structured data.
 Values are as-reported by CIK (not normalized across entity-identity or accounting-basis changes —
 see `09`). Full methodology + limitations:
 [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
@@ -62,11 +63,14 @@ see `09`). Full methodology + limitations:
   demand and an affordable redistribution license both materialize.
 - **No intraday data (MVP).** Option chains are end-of-day grain. Intraday event reactions are
   out of scope for the MVP.
-- **Universe = all EDGAR for fundamentals & filings; index *membership* = S&P 500 + DJIA.**
-  Filings and fundamentals are ingested for the full EDGAR universe (~7,992 CIKs from SEC's
-  `company_tickers.json`). Survivorship-free *index membership* is tracked for the S&P 500 and
-  the DJIA; Nasdaq-100 is current-forward only (no free reliable deep history). Russell 3000 /
-  broad-index historical membership is a paid/hard data problem, out of MVP scope.
+- **Universe = all EDGAR for fundamentals & filings; index *membership* = SP500 + DJIA + NDX + DJT + DJU.**
+  Filings and fundamentals are ingested for the full EDGAR universe (SEC `company_tickers.json` plus
+  curated historical names). Survivorship-free *index membership* is served for those five indices
+  with **index-specific depth** (SP500/DJIA deepest; NDX monthly modern-only; DJT/DJU modern floors).
+  Russell 3000 / multi-decade broad membership is a paid/hard data problem, out of MVP scope.
+- **Options-implied expected move is not yet live in the public API.** The methodology is
+  documented in [`07`](07-options-implied-expectations.md); product serving awaits licensed
+  options history. Correctness cases that need it are **skipped**, not green-washed.
 
 ## Coverage (measured against the live database)
 
@@ -77,10 +81,11 @@ see `09`). Full methodology + limitations:
   (~2009), not by filing coverage. See [`02-edgar-ingestion.md`](02-edgar-ingestion.md).
 - **Pre-XBRL fundamentals:** SEC XBRL `companyfacts` begins ~2009, so the *XBRL tier* floors at
   FY2009. Earlier periods are served by the separate **parsed tier** — values read from filing
-  text for a growing set (605 companies / 40,958 facts, expanding via a prioritized
-  batch), clearly labeled `provenance='parsed'` and gap-fill only. This is partial, not
-  comprehensive, has its own extraction error profile, and is as-reported by CIK (not normalized
-  across entity-identity or accounting-basis changes); see [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
+  text for a growing set (~1.5k companies / ~104k facts as of 2026-07-23, expanding via
+  prioritized batches), clearly labeled `provenance='parsed'` and gap-fill only. This is partial,
+  not comprehensive, has its own extraction error profile, and is as-reported by CIK (not
+  normalized across entity-identity or accounting-basis changes); see
+  [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 - **Fundamentals (current):** full statements are ingested — income statement, **balance sheet,
   and cash flow** (12 logical metrics; instant balance-sheet concepts are stored as point-in-time
   snapshots). Concept→tag coverage is resolved across multiple us-gaap tags per metric (e.g.

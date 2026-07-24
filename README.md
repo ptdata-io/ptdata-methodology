@@ -6,9 +6,10 @@ actually available at the time — not the data as it looks today.**
 This repository is the public, falsifiable specification of how the ptdata service works.
 Trust in a point-in-time data product cannot come from marketing; it has to come from
 *falsifiability*. So the methodology is open, and a companion repository
-([ptdata-correctness](https://github.com/ptdata/ptdata-correctness)) contains a runnable
-test suite that anyone can execute against the live service to check that it behaves as
-documented. If we are wrong, the tests fail, and you can see it.
+([ptdata-correctness](https://github.com/ptdata-io/ptdata-correctness)) contains a runnable
+test suite that anyone can execute against the live service
+([api.ptdata.io](https://api.ptdata.io)) to check that it behaves as documented. If we are
+wrong, the tests fail, and you can see it.
 
 ## The problem: lookahead bias
 
@@ -51,22 +52,26 @@ options analytics. We never label it "consensus." See
 
 ## Coverage status
 
-**Pre-launch — code-complete, full backfill done, not yet deployed to a public URL.** The
-measured coverage and every known gap are tracked in
+**Live public API:** [https://api.ptdata.io](https://api.ptdata.io) (free IP-limited tier + paid
+Pro/Scale via account). Measured coverage and every known gap are tracked in
 [`docs/08-known-limitations.md`](docs/08-known-limitations.md) — read it before relying on anything
-here.
+here. Product site: [https://ptdata.io](https://ptdata.io).
 
-- **Universe:** all EDGAR (~8,000 companies) for fundamentals & filings; **S&P 500 + DJIA** for
-  survivorship-free historical index membership (NDX current-forward only).
+- **Universe:** all EDGAR (~8,300 companies) for fundamentals & filings; survivorship-free **index
+  membership** for **S&P 500, DJIA, NDX, DJT, and DJU** (depth varies by index — NDX is monthly-grain
+  and modern-only; see [`docs/05-index-membership.md`](docs/05-index-membership.md)).
 - **Fundamentals:** full statements (12 metrics — income, balance sheet, cash flow) for **FY2009→
-  present** (the SEC XBRL era), plus a clearly-labeled **parsed pre-XBRL tier** for FY2001–2008;
-  banks/brokers/insurers get an as-reported **revenue family** ([`docs/10-financials.md`](docs/10-financials.md)).
-  Earnings (8-K timestamps) span the full filing history. **Source of record:** SEC EDGAR (public domain).
+  present** (the SEC XBRL era), plus a clearly-labeled **parsed pre-XBRL tier** for earlier periods
+  (growing curated/batch set); banks/brokers/insurers get an as-reported **revenue family**
+  ([`docs/10-financials.md`](docs/10-financials.md)). Earnings (8-K timestamps) span the full filing
+  history. Fundamentals are kept fresh via **daily EDGAR incremental** ingestion. **Source of
+  record:** SEC EDGAR (public domain).
 - **Raw prices are out of scope for the redistributable product** — by design. Prices are a
   commodity with no public-domain source and licensing that forbids cheap redistribution; ptdata
   serves the point-in-time *corporate* data nobody else does, and leaves prices to dedicated
   (often free, for personal use) price sources. We *do* serve **derived** event analytics
-  (e.g. a realized earnings reaction as a return) where they're differentiated. See
+  (e.g. a realized earnings reaction as a return) where they're differentiated. Options-implied
+  expected move is specified but **not yet live** (see limitations). See
   [`docs/08-known-limitations.md`](docs/08-known-limitations.md).
 
 ## Repository layout

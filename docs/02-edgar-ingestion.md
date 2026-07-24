@@ -1,12 +1,14 @@
 # 02 — EDGAR ingestion
 
-*Status: filing-index ingestion (6a) and 8-K Item 2.02 earnings events (6b) implemented;
-fundamentals (6c) pending. This document is filled in as those land.*
+*Status: **live.** Filing-index ingestion, 8-K Item 2.02 earnings events, XBRL fundamentals
+(`companyfacts`), and **daily incremental** re-ingest of CIKs that filed since the last run are
+implemented and running against production. Pre-XBRL text extraction is a separate tier
+([`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md)).*
 
 SEC EDGAR is ptdata's foundational, public-domain source. This document specifies how we
 ingest it and how versioning/linking work.
 
-## Implemented (6a)
+## Implemented — filing index
 
 - The structured submissions feed (`https://data.sec.gov/submissions/CIK##########.json`) is
   fetched with a descriptive SEC-compliant User-Agent, parsed into filing records, and
@@ -20,17 +22,25 @@ ingest it and how versioning/linking work.
   submissions feed are linked to securities (resolving ticker → company). `amends_accession`
   linkage (restatement chains) is still resolved by a later step, not at index ingest.
 
-## Implemented (6b — earnings announcement events)
+## Implemented — earnings announcement events (8-K Item 2.02)
 
 - Each ingested 8-K carrying **Item 2.02** ("Results of Operations and Financial Condition")
   becomes an `earnings_event`, keyed by its 8-K accession (idempotent), capturing the exact
   `sec_acceptance_ts` from EDGAR.
-- **Deferred by design:** fiscal-period attribution (`fiscal_year`/`fiscal_period`) and the
-  market `dissemination_ts`. An 8-K's `period_of_report` is the announcement date, not the
-  fiscal-period end, so attribution is enriched authoritatively in 6c (from the as-reported
-  parse); dissemination/wire time is a separate sourcing effort. Until then events carry
-  `dissemination_confidence = 'unknown'` and null fiscal attribution — see
+- **Still thin by design:** market `dissemination_ts` / wire time is a separate sourcing effort
+  (many events still carry `dissemination_confidence = 'unknown'`). Fiscal-period attribution on
+  earnings events is enriched where possible from fundamentals context; see
   [`06-earnings-events.md`](06-earnings-events.md) and [`08-known-limitations.md`](08-known-limitations.md).
+
+## Implemented — XBRL fundamentals + daily incremental
+
+- **XBRL fundamentals** from `companyfacts` → `financial_fact` with `provenance='xbrl'`,
+  bitemporal supersession, and methodology versioning ([`03-fundamentals.md`](03-fundamentals.md)).
+- **Daily incremental:** EDGAR daily master index → re-ingest only CIKs that filed forms of
+  interest since the last watermark (`edgar:incremental` in `ingestion_run`). Temporary SEC 403s
+  for not-yet-published indexes do not permanently skip those days.
+- **Pre-XBRL text parse** is offline/batch and gap-fills only
+  ([`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md)).
 
 ## Scope
 
@@ -50,7 +60,7 @@ ingest it and how versioning/linking work.
   chain that powers as-reported-vs-restated queries ([`03`](03-fundamentals.md)).
 - Each ingestion is recorded in `ingestion_run` for audit/lineage.
 
-## To document here
+## Open documentation gaps (not product blockers)
 
-Rate-limit / fair-access compliance with SEC; XBRL vs. exhibit parsing strategy; concept
-normalization map; handling of fiscal-year-end changes; dissemination-time sourcing inputs.
+SEC fair-access / User-Agent practice; full concept→tag map; fiscal-year-end change edge cases;
+dissemination-time sourcing if/when wire times ship.

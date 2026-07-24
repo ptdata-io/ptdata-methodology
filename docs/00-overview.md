@@ -2,8 +2,8 @@
 
 This document explains, in concrete terms, what ptdata claims to do and how the
 architecture delivers it. It is written to be checked: every claim here corresponds to a
-behavior exercised by the [ptdata-correctness](https://github.com/ptdata/ptdata-correctness)
-test suite.
+behavior exercised by the [ptdata-correctness](https://github.com/ptdata-io/ptdata-correctness)
+test suite against the live API ([api.ptdata.io](https://api.ptdata.io)).
 
 ## The single claim
 
