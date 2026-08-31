@@ -40,6 +40,33 @@ Validated across tech, banks, energy, insurers, and retail mega-caps. This is va
 2019-Q3 net income was reported one way originally and re-presented later; a query "as of"
 the earlier date returns the original figure, "as of" the later date the revised one.
 
+## Share counts
+
+Share counts are served as three logical metrics, XBRL era:
+
+- **`shares_outstanding`** — common shares outstanding **at the balance-sheet date** (an
+  *instant* concept, like the balance-sheet lines), from `CommonStockSharesOutstanding`.
+- **`weighted_avg_shares_diluted`** / **`weighted_avg_shares_basic`** — the *period-average*
+  counts that denominate diluted / basic EPS, from
+  `WeightedAverageNumberOfDilutedSharesOutstanding` /
+  `WeightedAverageNumberOfSharesOutstandingBasic`.
+
+They carry the unit `shares` (a pure count) and follow the same as-reported, point-in-time,
+restatement-aware model as every other metric: a later filing that restates a share count
+(e.g. a retroactive split adjustment) creates a new knowledge-time version, and a query "as of"
+the earlier date returns the originally-reported count.
+
+We **never sum share classes.** Each logical metric resolves to a single reported concept per
+period; a dual-class filer that reports only per-class counts with no printed total yields no
+fabricated total — the same as-reported discipline applied to the revenue family. Together with
+prices (a follow-on), `shares_outstanding` is the primitive that makes point-in-time market
+capitalization reconstructable without look-ahead bias.
+
+Annual (FY) figures are the validated coordinate. As with any XBRL metric, an individual
+quarterly value can occasionally reflect a filer's own scale-tagging error in that 10-Q; later
+filings supersede it and the annual figure is unaffected. Share counts before the XBRL era are
+a documented follow-on.
+
 ## Principle
 
 ptdata stores fundamentals **as reported at each point in knowledge time**. The
