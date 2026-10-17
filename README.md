@@ -60,8 +60,9 @@ here. Product site: [https://ptdata.io](https://ptdata.io).
 - **Universe:** all EDGAR (~8,300 companies) for fundamentals & filings; survivorship-free **index
   membership** for **S&P 500, DJIA, NDX, DJT, and DJU** (depth varies by index — NDX is monthly-grain
   and modern-only; see [`docs/05-index-membership.md`](docs/05-index-membership.md)).
-- **Fundamentals:** full statements (12 metrics — income, balance sheet, cash flow) for **FY2009→
-  present** (the SEC XBRL era), plus a clearly-labeled **parsed pre-XBRL tier** for earlier periods
+- **Fundamentals:** full statements (income, balance sheet, cash flow) for **FY2009→
+  present** (the SEC XBRL era), plus three XBRL-only share counts (`shares_outstanding`,
+  `weighted_avg_shares_basic`, `weighted_avg_shares_diluted`), plus a clearly-labeled **parsed pre-XBRL tier** for earlier periods
   (growing curated/batch set); banks/brokers/insurers get an as-reported **revenue family**
   ([`docs/10-financials.md`](docs/10-financials.md)). Earnings (8-K timestamps) span the full filing
   history. Fundamentals are kept fresh via **daily EDGAR incremental** ingestion. **Source of
