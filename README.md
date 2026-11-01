@@ -70,8 +70,8 @@ here. Product site: [https://ptdata.io](https://ptdata.io).
 - **Raw prices are out of scope for the redistributable product** — by design. Prices are a
   commodity with no public-domain source and licensing that forbids cheap redistribution; ptdata
   serves the point-in-time *corporate* data nobody else does, and leaves prices to dedicated
-  (often free, for personal use) price sources. We *do* serve **derived** event analytics
-  (e.g. a realized earnings reaction as a return) where they're differentiated. Options-implied
+  (often free, for personal use) price sources. ptdata does not serve a realized earnings
+  price reaction. Options-implied
   expected move is specified but **not yet live** (see limitations). See
   [`docs/08-known-limitations.md`](docs/08-known-limitations.md).
 
@@ -85,7 +85,7 @@ here. Product site: [https://ptdata.io](https://ptdata.io).
 | [`03-fundamentals.md`](docs/03-fundamentals.md) | As-reported vs. restated handling |
 | [`04-corporate-actions.md`](docs/04-corporate-actions.md) | Point-in-time price adjustment and lineage |
 | [`05-index-membership.md`](docs/05-index-membership.md) | Historical S&P 500 constituents |
-| [`06-earnings-events.md`](docs/06-earnings-events.md) | 8-K timestamping, as-reported figures, event windows |
+| [`06-earnings-events.md`](docs/06-earnings-events.md) | 8-K timestamping and as-reported figures |
 | [`07-options-implied-expectations.md`](docs/07-options-implied-expectations.md) | Options-implied expected move; data source; licensing basis |
 | [`08-known-limitations.md`](docs/08-known-limitations.md) | Explicit caveats and coverage gaps |
 | [`09-pre-xbrl-fundamentals.md`](docs/09-pre-xbrl-fundamentals.md) | The parsed tier: pre-2009 fundamentals, confidence index |

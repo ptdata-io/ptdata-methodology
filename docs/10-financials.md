@@ -65,7 +65,9 @@ The members a given filer does not report are **absent**, not zero — a bank ha
   `RevenuesNetOfInterestExpense` — `revenue` is genuinely absent. The response lists it under
   `unavailable` with a reason code (`not_reported`, or `financials_family` for a financial that
   reports only component lines) and a pointer to the family. A component is never returned as if
-  it were the whole, and components are never added together.
+  it were the whole, and components are never added together. Once a period has a headline tag,
+  later as-of dates keep that tag and follow its own restatements. A tag that first appears in
+  a later filing does not replace it.
 
 We *do* preserve **cross-era** consistency: each named metric maps to the same as-reported line in
 2003 and 2023, across the pre-XBRL→XBRL seam (below).

@@ -68,13 +68,11 @@ is a lookahead leak whenever a split or spinoff occurred after the backtest date
 ## Worked example 3 — the priced-in expectation (earnings events)
 
 For NVIDIA's Q1 FY2024 announcement (May 24, 2023), ptdata records the 8-K acceptance
-timestamp, the as-reported EPS and revenue (lineage to the 8-K accession), the
-**options-implied expected move** as it stood at the prior close (T-1), and the realized
-price reaction across a configurable window (default T-5…T+5). The "surprise" the product
-exposes is the realized move measured against the move the options market had *priced in* —
-not against an analyst consensus. See [`06-earnings-events.md`](06-earnings-events.md) for
-why, and [`07-options-implied-expectations.md`](07-options-implied-expectations.md) for how
-the expected move is computed and why it is point-in-time-correct by construction.
+timestamp and the as-reported EPS and revenue (the figure knowable at acceptance, or the
+original periodic report when the XBRL lands later). See
+[`06-earnings-events.md`](06-earnings-events.md). The options-implied expected move is
+specified in [`07-options-implied-expectations.md`](07-options-implied-expectations.md) and
+is not yet served. ptdata does not serve a realized price reaction.
 
 ## Architecture in one paragraph
 

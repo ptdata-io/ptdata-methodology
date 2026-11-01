@@ -1,23 +1,19 @@
 # 06 — Earnings events
 
-An earnings event in ptdata is the join of four things, each point-in-time-correct:
+An earnings event in ptdata joins two things, each point-in-time-correct:
 
 1. **When the announcement happened** — timestamp(s).
 2. **What was reported** — as-reported figures, with lineage.
-3. **What was priced in beforehand** — the options-implied expected move at T-1
-   (see [`07-options-implied-expectations.md`](07-options-implied-expectations.md)).
-4. **What actually happened** — realized daily price action across a configurable window
-   (default T-5…T+5).
 
-`get_earnings_event(ticker, fiscal_period, window=…)` returns all four.
+The options-implied expected move is specified in
+[`07-options-implied-expectations.md`](07-options-implied-expectations.md) and is not yet
+served. ptdata does not serve a realized price reaction.
 
-*Status: implemented — 8-K Item 2.02 timestamps (6b), fiscal-period attribution, and the
-realized price reaction (6d); served via `/v1/earnings-event`. The realized T+1 reaction is
-computed from daily closes around the announcement (anchored after-close vs before-open via an
-ET/DST-aware rule); on a private instance these closes come from a broker feed (IBKR,
-split-adjusted — correct for event-window returns, not redistributable). The options-implied
-expected move (6f) and as-reported figure linkage are added as those land; the response omits
-them until then. **Fiscal attribution:** an earnings 8-K is attributed to the fiscal period
+`get_earnings_event(ticker, fiscal_year, fiscal_period)` returns the 8-K event.
+
+*Status: implemented — 8-K Item 2.02 timestamps (6b), fiscal-period attribution, and
+as-reported revenue and `eps_gaap`; served via `/v1/earnings-event`. The options-implied
+expected move (6f) is omitted until that data lands. **Fiscal attribution:** an earnings 8-K is attributed to the fiscal period
 of the periodic filing it precedes — a 10-Q gives the quarter, a 10-K gives FY. A Q4/annual
 release accompanies the 10-K and is therefore attributed to **FY**, not Q4.*
 
@@ -34,11 +30,8 @@ conflating them corrupts any event study:
   market-moving event, and it frequently **precedes** the 8-K acceptance by minutes — and
   occasionally the 8-K is filed the next morning.
 
-A T+1 reaction measured from `sec_acceptance_ts` when the news actually broke earlier (or
-later) is mis-anchored. ptdata therefore stores both. `dissemination_ts` is nullable and
-carries a `dissemination_confidence` flag (`exact` | `estimated` | `unknown`) and a
-`dissemination_source`. The event window anchors on `dissemination_ts` when its confidence
-is `exact`, otherwise it falls back to `sec_acceptance_ts` and says so in the response.
+ptdata stores both. `dissemination_ts` is nullable and carries a `dissemination_confidence`
+flag (`exact` | `estimated` | `unknown`) and a `dissemination_source`.
 
 > **Honest limitation.** Sourcing exact wire-dissemination times historically is hard.
 > Where we cannot establish one with confidence, we expose the SEC acceptance timestamp and
@@ -47,32 +40,18 @@ is `exact`, otherwise it falls back to `sec_acceptance_ts` and says so in the re
 
 ## As-reported figures
 
-EPS and revenue (and other reported headline figures) are stored as `financial_fact` rows
-whose `source_accession` is the **8-K** that announced them — *not* the later 10-Q/10-K. The
-8-K Item 2.02 press-release exhibit is what the market reacted to; the 10-Q filed weeks
-later may differ slightly (and any such difference is itself visible as a later-knowledge
-version of the same fact). The earnings event therefore reports the figures *as announced*,
-with lineage to the announcing 8-K.
+`as_reported.revenue` and `as_reported.eps_gaap` are the values knowable when the 8-K was
+accepted. The XBRL facts for the period usually arrive with the 10-K, after the 8-K, so
+nothing is knowable on the acceptance date. The event then uses the first version of the
+headline concept — the original 10-K — and not a later restatement or a tag the filer adopted
+in a subsequent filing. `eps_gaap` is diluted EPS, or continuing-operations diluted EPS when
+that is the only diluted figure. `eps_non_gaap` is not computed. The event's
+`filing_accession` remains the announcing 8-K. The fact's own `source_accession` is the filing
+that carried that version, usually the 10-K.
 
 We expose as-reported values; we do **not** compute a beat/miss against an analyst
 consensus, because ptdata does not carry analyst consensus (see
-[`07`](07-options-implied-expectations.md) for the rationale). The expectation benchmark we
-*do* provide is the options-implied expected move.
-
-## Event windows
-
-The price-action window is configurable (`window=(-5, +5)` default), measured in trading
-days relative to the event day T. T is the trading session in which the announcement was
-disseminated (after-close announcements set T = the session just ended; before-open
-announcements set T = the upcoming session). The window returns daily raw and adjusted
-prices and the per-day return, point-in-time-adjusted per
-[`04-corporate-actions.md`](04-corporate-actions.md).
-
-The headline derived statistic is the **realized move vs. implied move**: the actual
-T-1→T+1 (configurable) return compared against the options-implied expected move that stood
-at T-1. For NVIDIA Q1 FY2024 (announced 2023-05-24), a roughly +24% realized reaction
-against a far smaller implied move is the kind of "surprise relative to what was priced in"
-this feature is built to quantify.
+[`07`](07-options-implied-expectations.md) for the rationale).
 
 ## Scheduling / upcoming events
 

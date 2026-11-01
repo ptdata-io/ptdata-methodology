@@ -56,12 +56,12 @@ see `09`). Full methodology + limitations:
   vendor licensing (hundreds–thousands/mo) for data that is *not* our differentiator. ptdata's
   value is point-in-time *corporate* data (restatements, survivorship-free membership, filing
   lineage, earnings timestamps) — the thing agents can't get elsewhere. For prices, use a
-  dedicated source (free for personal use: e.g. your broker, or public EOD sources). We *do*
-  serve **derived** event analytics computed internally — a realized earnings reaction (a
-  return %) and the options-implied expected move (a %) — which are differentiated and are not
-  redistribution of raw price/quote data. A price feed may be added later only if a customer
+  dedicated source (free for personal use: e.g. your broker, or public EOD sources). ptdata
+  does not serve a realized earnings price reaction. The options-implied expected move is a
+  derived percentage, specified but not yet live, and is not a redistribution of raw quotes.
+  A price feed may be added later only if a customer
   demand and an affordable redistribution license both materialize.
-- **No intraday data (MVP).** Option chains are end-of-day grain. Intraday event reactions are
+- **No intraday data (MVP).** Option chains are end-of-day grain. Intraday prices are
   out of scope for the MVP.
 - **Universe = all EDGAR for fundamentals & filings; index *membership* = SP500 + DJIA + NDX + DJT + DJU.**
   Filings and fundamentals are ingested for the full EDGAR universe (SEC `company_tickers.json` plus
@@ -98,7 +98,8 @@ see `09`). Full methodology + limitations:
   `noninterest_income`, `total_net_revenue`, `premiums_earned`, `net_investment_income`, and
   `total_revenue` where a grand total is printed); a financial is covered when it reports ≥1
   member. Logical `revenue` returns a printed headline when the filer has one, including
-  `RevenuesNetOfInterestExpense`; it does not sum components. An unavailable `revenue` (no headline)
+  `RevenuesNetOfInterestExpense`. The headline is the concept first filed for that period, and
+  later as-of dates follow that concept's restatements. It does not sum components. An unavailable `revenue` (no headline)
   returns guidance with a reason code pointing to the family rather than a null. Residual uncovered
   cases are structural — revenue-less ETF/crypto trusts (SIC 6221) and
   foreign IFRS-tagged filers. Full methodology: [`10-financials.md`](10-financials.md).
@@ -151,8 +152,7 @@ see `09`). Full methodology + limitations:
   revisited via Polygon/Massive if demand appears.
 - **Dissemination timestamps.** `dissemination_ts` (true wire/press-release time) is
   best-effort and frequently `estimated`/`unknown` for older events; only `sec_acceptance_ts`
-  is guaranteed exact. Event windows fall back to SEC acceptance when dissemination
-  confidence is not `exact`, and the response says which anchor was used. See
+  is guaranteed exact. See
   [`06-earnings-events.md`](06-earnings-events.md).
 
 ## Methodological caveats
