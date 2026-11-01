@@ -97,8 +97,10 @@ see `09`). Full methodology + limitations:
   rather than synthesize one we serve an as-reported **revenue family** (`net_interest_income`,
   `noninterest_income`, `total_net_revenue`, `premiums_earned`, `net_investment_income`, and
   `total_revenue` where a grand total is printed); a financial is covered when it reports ≥1
-  member, and an unavailable `revenue` returns guidance pointing to the family rather than a
-  null. Residual uncovered cases are structural — revenue-less ETF/crypto trusts (SIC 6221) and
+  member. Logical `revenue` returns a printed headline when the filer has one, including
+  `RevenuesNetOfInterestExpense`; it does not sum components. An unavailable `revenue` (no headline)
+  returns guidance with a reason code pointing to the family rather than a null. Residual uncovered
+  cases are structural — revenue-less ETF/crypto trusts (SIC 6221) and
   foreign IFRS-tagged filers. Full methodology: [`10-financials.md`](10-financials.md).
 - **Upstream fiscal-year sanity.** A few filers report a bogus XBRL `fy` — Excel serial dates
   (e.g. 43101 = 2018-01-01), typos (1905, 2107), or null. ptdata does not anchor a period on an

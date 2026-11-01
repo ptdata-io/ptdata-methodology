@@ -42,9 +42,11 @@ These are queryable and falsifiable against the filings:
   `net_interest_income` $89.27B, `noninterest_income` $68.84B.
 - **Bank of America (`BAC`)** — `total_revenue` $98.58B, `net_interest_income` $56.93B,
   `noninterest_income` $41.65B.
-- **Goldman Sachs (`GS`)** — a broker-dealer with **no** *Total revenues* line: `total_net_revenue`
-  $46.25B, `net_interest_income` $6.35B, `noninterest_income` $39.9B. Asking `GS` for `revenue`
-  returns *guidance*, not silence (below).
+- **Goldman Sachs (`GS`)** — a broker-dealer with **no** *Revenues* line. Its printed headline is
+  `RevenuesNetOfInterestExpense` (`total_net_revenue`, $46.25B in the example year), with
+  `net_interest_income` $6.35B and `noninterest_income` $39.9B beside it. Logical `revenue` returns
+  that headline. It is a line the filer printed, not a sum of the components. The components stay
+  queryable on their own names.
 - **MetLife (`MET`)** — an insurer: `total_revenue` $66.91B, `premiums_earned` $44.28B,
   `net_investment_income` $19.91B.
 
@@ -58,9 +60,12 @@ The members a given filer does not report are **absent**, not zero — a bank ha
 - **No forced cross-company comparability.** Normalizing a bank, a broker, and an insurer onto one
   "revenue" axis is an opinionated modeling choice that belongs to the consumer, not the data. We
   serve the as-reported structure and let the consumer decide.
-- **No silent single revenue.** Where a filer prints no total, `revenue` is genuinely absent and we
-  say so (with a pointer to the family), rather than quietly returning a partial line as if it were
-  the whole.
+- **No silent single revenue.** Where a filer prints no headline total — not `Revenues`, not
+  `SalesRevenueNet` / `SalesRevenueGoodsNet`, not an ASC 606 revenue tag, and not
+  `RevenuesNetOfInterestExpense` — `revenue` is genuinely absent. The response lists it under
+  `unavailable` with a reason code (`not_reported`, or `financials_family` for a financial that
+  reports only component lines) and a pointer to the family. A component is never returned as if
+  it were the whole, and components are never added together.
 
 We *do* preserve **cross-era** consistency: each named metric maps to the same as-reported line in
 2003 and 2023, across the pre-XBRL→XBRL seam (below).
@@ -117,13 +122,14 @@ metric. Anything with no value appears under **`unavailable`**, keyed by the req
 with structured guidance:
 
 ```jsonc
-// get_fundamentals("GS", as_of_date=..., metrics=["revenue"])
+// a financial that prints only component lines, with no headline total
 {
   "metrics": { /* … whatever resolved … */ },
   "unavailable": {
     "revenue": {
-      "reason": "GS is a broker (SIC 6211) and does not report a single 'revenue' line. Financials report revenue as an as-reported FAMILY of subtotals, never a synthesized total. Use available_alternatives.",
-      "available_alternatives": ["total_net_revenue", "net_interest_income", "noninterest_income"],
+      "reason": "BCOMP is a broker (SIC 6211) and does not report a single 'revenue' line. Financials report revenue as an as-reported FAMILY of subtotals, never a synthesized total. Use available_alternatives.",
+      "code": "financials_family",
+      "available_alternatives": ["net_interest_income"],
       "docs_url": "https://github.com/ptdata-io/ptdata-methodology/blob/main/docs/10-financials.md"
     }
   }
