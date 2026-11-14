@@ -173,8 +173,10 @@ The quarter is withheld, with `code` still `not_reported`, when any of these fai
 
 Operating cash flow and capex for Q2 and Q3 keep a filed quarter of about three months.
 Microsoft FY2023 Q2 operating cash flow stays the discrete fact. If that quarter is absent,
-Q2 is YTD6 minus Q1 and Q3 is YTD9 minus YTD6 (`ytd_minus_prior_ytd`). The source accession
-is the later year-to-date filing. Capex stays positive for cash paid.
+Q2 is YTD6 minus Q1 and Q3 is YTD9 minus YTD6 (`ytd_minus_prior_ytd`). Those differences
+are knowable when the 10-Q that carries the cumulative figure is filed. They do not wait
+for the 10-K. Q4 still waits for the FY fact. The source accession is the later
+year-to-date filing. Capex stays positive for cash paid.
 
 Instant balance-sheet lines and shares outstanding at Q4 copy the FY instant. Provenance
 stays the filing's provenance. The method is `fy_instant`.
