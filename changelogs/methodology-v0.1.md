@@ -38,3 +38,6 @@ expectation benchmark. Rationale: `docs/07-options-implied-expectations.md`.
 - Logical metrics `cost_of_revenue` and `eps_basic`. EPS and share counts are not derived for Q4.
 - Earnings-event `fiscal_period` in the tool text is FY, or Q1–Q3. A fourth-quarter release
   stays on FY. `fiscal_year` and `fiscal_period` are required, and there is no `as_of_date`.
+- A quarter-length fact that ends on the fiscal year-end is that year's Q4, including when
+  a later filing stamps its own period on the comparative column. The tagged amount is
+  served. The annual figure is not subtracted.

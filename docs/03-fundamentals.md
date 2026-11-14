@@ -120,6 +120,12 @@ non-derived Q4 rule as diluted EPS.
 The read path derives a quarter only when the stored fact for that period is missing.
 A value served from `financial_fact` is unchanged and has no `derivation` object.
 
+A quarter-length span (about 76–105 days) that ends on the fiscal year-end is stored as
+that year's Q4. A later 10-Q often stamps its own fiscal period on that comparative
+column. The dates still make it Q4, so the read path serves the tagged amount and does
+not subtract. Target's FY2025 net income is the case: the tagged quarter is
+1,046,000,000 and the annual figure minus the three quarters is 1,045,000,000.
+
 Flow Q4, including `cost_of_revenue`, is `FY − (Q1 + Q2 + Q3)` on one us-gaap concept.
 The method is `fy_minus_q1_q3`. A same-concept nine-month total, when one is stored, must
 agree within 1 currency unit or the quarter is withheld. `provenance` is `"derived"`.
