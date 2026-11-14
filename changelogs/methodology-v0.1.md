@@ -27,3 +27,14 @@ expectation benchmark. Rationale: `docs/07-options-implied-expectations.md`.
 - Establish dissemination-time sourcing for earnings events.
 
 (See `docs/08-known-limitations.md`.)
+
+## Added while still pre-release (2026-11-10)
+
+- A missing Q4 flow value can be the annual total minus Q1, Q2, and Q3 of the same concept,
+  computed when the request asks for a quarter that was not tagged. `provenance` is `derived`.
+  `methodology_version` stays `0.1.0`.
+- Q2 and Q3 operating cash flow and capex stay the filed quarter when its duration is about
+  three months. Otherwise they are the year-to-date difference.
+- Logical metrics `cost_of_revenue` and `eps_basic`. EPS and share counts are not derived for Q4.
+- Earnings-event `fiscal_period` in the tool text is FY, or Q1–Q3. A fourth-quarter release
+  stays on FY. `fiscal_year` and `fiscal_period` are required, and there is no `as_of_date`.

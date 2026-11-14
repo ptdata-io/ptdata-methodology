@@ -6,9 +6,10 @@ filing text. ptdata serves a growing, **clearly-labeled, lower-confidence tier**
 extracted from the original filings. It is *additive* to the XBRL core and never replaces it.
 
 ## What it is
-- **Metrics:** the same 12 logical metrics as the XBRL tier (full income statement + balance sheet +
+- **Metrics:** the original 12 logical statement metrics (full income statement + balance sheet +
   cash flow), plus the financials revenue family for banks/brokers/insurers
-  ([`10-financials.md`](10-financials.md)).
+  ([`10-financials.md`](10-financials.md)). Q4 derivation and `cost_of_revenue` are XBRL-era
+  only. This parsed profile is unchanged.
 - **Scope:** a *curated* set of high-value companies (notable defunct issuers + S&P stalwarts for
   boundary continuity) **plus a growing prioritized batch** (S&P-500-historical names first) —
   **~1,500+ companies so far** (growing; measured on production), not yet the full pre-XBRL

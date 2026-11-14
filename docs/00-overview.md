@@ -72,7 +72,7 @@ timestamp and the as-reported EPS and revenue (the figure knowable at acceptance
 original periodic report when the XBRL lands later). See
 [`06-earnings-events.md`](06-earnings-events.md). The options-implied expected move is
 specified in [`07-options-implied-expectations.md`](07-options-implied-expectations.md) and
-is not yet served. ptdata does not serve a realized price reaction.
+is not yet served. ptdata does not serve prices.
 
 ## Architecture in one paragraph
 

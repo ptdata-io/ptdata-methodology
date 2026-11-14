@@ -55,8 +55,17 @@ The members a given filer does not report are **absent**, not zero — a bank ha
 
 ## What we deliberately do *not* do
 
-- **No derivation.** We never compute a bank "revenue" as `net_interest_income + noninterest_income`,
-  nor net a broker's gross revenues ourselves. Every served number is a line the filer printed.
+- **No synthesized totals.** We never compute a bank "revenue" as
+  `net_interest_income + noninterest_income`, nor net a broker's gross revenues ourselves. We
+  never add a product-cost line to a service-cost line and call it `cost_of_revenue`. A filer
+  that reports only those two components has no `cost_of_revenue`. `gross_profit` and `revenue`
+  stay the lines the filer printed.
+- **Derived quarters are a different operation, and they are flagged.** Where one tagged flow
+  line has an annual total and three quarters, a missing Q4 can be the annual total minus those
+  quarters. A missing Q2 or Q3 cash-flow quarter can be a year-to-date difference. The response
+  says `provenance: "derived"` and lists the input accessions. That is one tagged line, not a
+  revenue-family sum, and it is XBRL-era only. EPS, share counts, and `ebit` are not derived.
+  See [`03-fundamentals.md`](03-fundamentals.md).
 - **No forced cross-company comparability.** Normalizing a bank, a broker, and an insurer onto one
   "revenue" axis is an opinionated modeling choice that belongs to the consumer, not the data. We
   serve the as-reported structure and let the consumer decide.
