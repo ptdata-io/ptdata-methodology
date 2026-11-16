@@ -7,9 +7,11 @@ An earnings event in ptdata joins two things, each point-in-time-correct:
 
 The options-implied expected move is specified in
 [`07-options-implied-expectations.md`](07-options-implied-expectations.md) and is not yet
-served. ptdata does not serve a realized price reaction.
+served. ptdata does not serve prices.
 
 `get_earnings_event(ticker, fiscal_year, fiscal_period)` returns the 8-K event.
+`fiscal_year` and `fiscal_period` are required. There is no `as_of_date`.
+`fiscal_period` is **FY, or Q1–Q3**. A fourth-quarter release is not stored as Q4.
 
 *Status: implemented — 8-K Item 2.02 timestamps (6b), fiscal-period attribution, and
 as-reported revenue and `eps_gaap`; served via `/v1/earnings-event`. The options-implied

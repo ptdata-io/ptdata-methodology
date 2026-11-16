@@ -68,10 +68,12 @@ fabricated total — the same as-reported discipline applied to the revenue fami
 prices (a follow-on), `shares_outstanding` is the primitive that makes point-in-time market
 capitalization reconstructable without look-ahead bias.
 
-Annual (FY) figures are the validated coordinate. As with any XBRL metric, an individual
-quarterly value can occasionally reflect a filer's own scale-tagging error in that 10-Q; later
-filings supersede it and the annual figure is unaffected. Share counts before the XBRL era are
-a documented follow-on.
+Annual (FY) figures remain the filed coordinate. A derived Q4 is that annual figure minus the
+three quarters of the same concept. It is labeled `provenance: "derived"` and is not a second
+annual total. An individual quarterly value can occasionally reflect a filer's own scale-tagging
+error in that 10-Q; later filings supersede it, and the annual figure is the filed total.
+EPS and weighted-average share counts are not derived. Share counts before the XBRL era are a
+documented follow-on. Derived quarters and `cost_of_revenue` are XBRL-era only.
 
 ## Principle
 
@@ -94,8 +96,106 @@ intervals). See [`01-bitemporal-model.md`](01-bitemporal-model.md).
 - **Enron Q3 2001**: originally-reported figures as-of 2001-11-15 (pre-bankruptcy), not
   later forensic restatements.
 
+## Logical metric names
+
+`LOGICAL_METRICS` has 25 names. Twelve are the original statement lines (revenue, operating
+income, EBIT, net income, diluted EPS, operating cash flow, capex, total assets, total
+liabilities, equity, cash, long-term debt). The map also has `gross_profit`, the revenue
+family (`total_revenue`, `total_net_revenue`, `net_interest_income`, `noninterest_income`,
+`premiums_earned`, `net_investment_income`, `real_estate_revenue`), three share counts,
+`cost_of_revenue`, and `eps_basic`.
+
+`cost_of_revenue` is sticky, like `revenue`. The candidate order is `CostOfRevenue`,
+`CostOfGoodsAndServicesSold`, `CostOfGoodsSold`, `CostOfServices`. An empty higher-priority
+tag does not block a populated later tag. Tags whose name says excluding depreciation are
+not candidates. If the only populated cost tags are the product line and the service line,
+`cost_of_revenue` is unavailable. Those two lines are not added. `gross_profit` is the
+tagged `GrossProfit` fact. It is not computed as revenue minus cost. `ebit` has no us-gaap
+tag in this map. It stays `unavailable` with `code: "not_reported"` unless a parsed fact
+was stored under that name. `eps_basic` is `EarningsPerShareBasic` and follows the same
+non-derived Q4 rule as diluted EPS.
+
+## Derived quarters (XBRL era)
+
+The read path derives a quarter only when the stored fact for that period is missing.
+A value served from `financial_fact` is unchanged and has no `derivation` object.
+
+A quarter-length span (about 76–105 days) that ends on the fiscal year-end is stored as
+that year's Q4. A later 10-Q often stamps its own fiscal period on that comparative
+column. The dates still make it Q4, so the read path serves the tagged amount and does
+not subtract. Target's FY2025 net income is the case: the tagged quarter is
+1,046,000,000 and the annual figure minus the three quarters is 1,045,000,000.
+
+Flow Q4, including `cost_of_revenue`, is `FY − (Q1 + Q2 + Q3)` on one us-gaap concept.
+The method is `fy_minus_q1_q3`. A same-concept nine-month total, when one is stored, must
+agree within 1 currency unit or the quarter is withheld. `provenance` is `"derived"`.
+`source_accession` is the 10-K accession of the FY input. `knowledge_from` is the latest
+filing date among the inputs. `methodology_version` stays `0.1.0`.
+
+The response adds `derivation.inputs` (period, accession, knowledge time, value) and copies
+those accessions onto `lineage.derived_inputs`. Both keys are omitted when nothing was
+derived. `extraction_confidence` stays present and null on XBRL and derived values.
+
+```json
+{
+  "value": 94930000000,
+  "unit": "USD",
+  "fiscal_year": 2024,
+  "fiscal_period": "Q4",
+  "source_accession": "0000320193-24-000123",
+  "knowledge_from": "2024-11-01T00:00:00Z",
+  "methodology_version": "0.1.0",
+  "provenance": "derived",
+  "extraction_confidence": null,
+  "derivation": {
+    "method": "fy_minus_q1_q3",
+    "inputs": [
+      {
+        "fiscal_period": "FY",
+        "accession": "0000320193-24-000123",
+        "knowledge_from": "2024-11-01T00:00:00Z",
+        "value": 391035000000
+      }
+    ]
+  }
+}
+```
+
+An `as_of` date before the FY 10-K was filed does not see that Q4. Inputs are the versions
+whose filing date is on or before `as_of`. A later amendment creates a new derived version.
+An earlier `as_of` still sees the previous one.
+
+The quarter is withheld, with `code` still `not_reported`, when any of these fail:
+
+- A required input is missing. The reason names the slot.
+- Durations disagree with a year: FY about 350–380 days, each quarter about 76–105 days,
+  Q1 starting on the FY start, quarters abutting, no gap and no overlap. A 10-KT, a
+  transition report, or a short year is not derived.
+- The four inputs mix a first-filed figure with a comparative restatement from a later
+  ordinary 10-Q or 10-K. Microsoft FY2017 revenue is this case and is not served.
+  A `10-Q/A` or `10-K/A` updates that one input and moves `knowledge_from` without waiting
+  for the other three.
+- Revenue, the other revenue totals, `cost_of_revenue`, or capex would come out negative.
+
+Operating cash flow and capex for Q2 and Q3 keep a filed quarter of about three months.
+Microsoft FY2023 Q2 operating cash flow stays the discrete fact. If that quarter is absent,
+Q2 is YTD6 minus Q1 and Q3 is YTD9 minus YTD6 (`ytd_minus_prior_ytd`). Those differences
+are knowable when the 10-Q that carries the cumulative figure is filed. They do not wait
+for the 10-K. Q4 still waits for the FY fact. The source accession is the later
+year-to-date filing. Capex stays positive for cash paid.
+
+Instant balance-sheet lines and shares outstanding at Q4 copy the FY instant. Provenance
+stays the filing's provenance. The method is `fy_instant`.
+
+EPS and weighted-average share counts are not additive. A filed quarter-length Q4 fact is
+served as filed. Otherwise the reason is exactly `Q4 EPS/share count is not additive; not derived`.
+
+Forms that may feed a derivation are `10-Q`, `10-Q/A`, `10-K`, and `10-K/A`. 8-K facts and
+the parsed pre-XBRL tier are ignored by the derivation. Foreign 20-F and 40-F filers are
+unchanged.
+
 ## To document here
 
-Concept normalization and unit handling; fiscal-period boundary rules; how partial
-restatements (single line items) are represented; treatment of as-reported figures that
-first appear in an 8-K exhibit vs. the subsequent 10-Q.
+Concept normalization and unit handling; how partial restatements of a single line item are
+represented when they are not an amendment; treatment of as-reported figures that first
+appear in an 8-K exhibit versus the subsequent 10-Q.

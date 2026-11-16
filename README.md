@@ -70,8 +70,7 @@ here. Product site: [https://ptdata.io](https://ptdata.io).
 - **Raw prices are out of scope for the redistributable product** — by design. Prices are a
   commodity with no public-domain source and licensing that forbids cheap redistribution; ptdata
   serves the point-in-time *corporate* data nobody else does, and leaves prices to dedicated
-  (often free, for personal use) price sources. ptdata does not serve a realized earnings
-  price reaction. Options-implied
+  (often free, for personal use) price sources. ptdata does not serve prices. Options-implied
   expected move is specified but **not yet live** (see limitations). See
   [`docs/08-known-limitations.md`](docs/08-known-limitations.md).
 

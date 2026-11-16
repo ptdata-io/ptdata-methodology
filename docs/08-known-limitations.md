@@ -26,11 +26,14 @@ out-of-scope behavior, never a silent pass).
 | S&P 500 membership (distinct securities, historical) | ~1,256 |
 | DJIA / NDX / DJT / DJU membership | served (depth varies — see below) |
 
-Metrics ingested: **12 logical metrics** — full income statement + balance sheet + cash flow
-(revenue, operating income, EBIT, net income, diluted EPS; operating cash flow, capex; total
-assets, total liabilities, equity, cash, long-term debt) — resolved across us-gaap tags. Banks,
-brokers, and insurers additionally get an as-reported **revenue family** (they have no single
-revenue line); see [`10-financials.md`](10-financials.md). Fundamentals are kept fresh by a daily
+`LOGICAL_METRICS` exposes **25** names. The original statement set is 12: revenue, operating
+income, EBIT, net income, diluted EPS, operating cash flow, capex, total assets, total
+liabilities, equity, cash, and long-term debt. The same map also includes `gross_profit`,
+seven revenue-family names, three share counts, `cost_of_revenue`, and `eps_basic`. Older
+copies of this page said 12 and meant that statement set. A listing that said 15 was that set
+plus the three share counts. Banks, brokers, and insurers additionally get an as-reported
+**revenue family** (they have no single revenue line); see [`10-financials.md`](10-financials.md).
+Fundamentals are kept fresh by a daily
 incremental ingestion of EDGAR's daily index (re-ingesting only CIKs that filed since the last run).
 
 **Pre-XBRL parsed tier (`provenance='parsed'`).** Below the FY2009 XBRL floor (and for some
@@ -57,7 +60,7 @@ see `09`). Full methodology + limitations:
   value is point-in-time *corporate* data (restatements, survivorship-free membership, filing
   lineage, earnings timestamps) — the thing agents can't get elsewhere. For prices, use a
   dedicated source (free for personal use: e.g. your broker, or public EOD sources). ptdata
-  does not serve a realized earnings price reaction. The options-implied expected move is a
+  does not serve prices. The options-implied expected move is a
   derived percentage, specified but not yet live, and is not a redistribution of raw quotes.
   A price feed may be added later only if a customer
   demand and an affordable redistribution license both materialize.
@@ -71,6 +74,22 @@ see `09`). Full methodology + limitations:
 - **Options-implied expected move is not yet live in the public API.** The methodology is
   documented in [`07`](07-options-implied-expectations.md); product serving awaits licensed
   options history. Correctness cases that need it are **skipped**, not green-washed.
+
+## Derived quarters (XBRL era)
+
+A missing Q4 on a flow line is served only as the annual total minus the three discrete
+quarters of the same us-gaap concept, and only when the durations abut, the forms are 10-Q,
+10-Q/A, 10-K, or 10-K/A, and the four inputs are not a mix of a first-filed figure and a
+comparative restatement. An amendment updates that one input. A later ordinary 10-Q that
+restates a quarter while the annual total is still the first filing does not produce a Q4.
+Microsoft FY2017 revenue is the worked case. EPS and weighted-average share counts are not
+subtracted. Balance-sheet Q4 is the FY instant and keeps the filing's provenance. Operating
+cash flow and capex keep a filed quarter of about three months, and otherwise use the
+year-to-date difference. `cost_of_revenue` follows the same flow rules. It is not a sum of
+product cost and service cost. `gross_profit` is not computed from revenue and cost. `ebit`
+stays unavailable unless a fact was stored under that name. The parsed pre-XBRL tier does
+not derive Q4 and does not extract `cost_of_revenue`. Derived values are computed on read
+and are not written into `financial_fact`.
 
 ## Coverage (measured against the live database)
 
@@ -87,8 +106,9 @@ see `09`). Full methodology + limitations:
   normalized across entity-identity or accounting-basis changes); see
   [`09-pre-xbrl-fundamentals.md`](09-pre-xbrl-fundamentals.md).
 - **Fundamentals (current):** full statements are ingested — income statement, **balance sheet,
-  and cash flow** (12 logical metrics; instant balance-sheet concepts are stored as point-in-time
-  snapshots). Concept→tag coverage is resolved across multiple us-gaap tags per metric (e.g.
+  and cash flow** (25 logical metric names; the original statement set is 12; instant
+  balance-sheet concepts are stored as point-in-time snapshots). Concept→tag coverage is
+  resolved across multiple us-gaap tags per metric (e.g.
   revenue spans `Revenues`, ASC-606, and `SalesRevenueNet`; long-term debt and capex coalesce
   several variant tags), so a metric a filer doesn't tag is sparse/absent rather than wrong. Facts
   whose source filing is outside the ingested window are skipped (lineage integrity), bounding
